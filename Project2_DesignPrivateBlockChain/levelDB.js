@@ -18,10 +18,12 @@ function addLevelDBData(key, value) {
             }
         });
     });
+    
 }
 
 // Get data from levelDB with key
 function getLevelDBData(key) {
+    
     return new Promise((resolve, reject) => {
         db.get(key, function (err, value) {
             if (err) {
@@ -31,10 +33,12 @@ function getLevelDBData(key) {
             }
         });
     });
+    
 }
 
 // Add data to levelDB with value and key or Read all data from the DB
 function readAllOrWriteToLevelDB(key, value, readFlag = false) {
+    
     return new Promise((resolve, reject) => {
         let dataCounter = 0;
         let dataArray = [];
@@ -51,6 +55,8 @@ function readAllOrWriteToLevelDB(key, value, readFlag = false) {
                     data: dataArray,
                 }));
             } else {
+                // this is yet another async function that returns
+                // a promise
                 addLevelDBData(key, value)
                     .then((res) => {
                         resolve(res);
@@ -61,6 +67,7 @@ function readAllOrWriteToLevelDB(key, value, readFlag = false) {
             }
         });
     });
+    
 }
 
 module.exports = {

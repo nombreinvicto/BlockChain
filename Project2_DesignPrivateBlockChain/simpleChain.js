@@ -1,13 +1,5 @@
-/* ===== cryotojs.SHA256 with Crypto-js ===============================
- |  Learn more: Crypto-js: https://github.com/brix/crypto-js  |
- |  =========================================================*/
-
-const cryotojs = require('crypto-js');
+const cryptojs = require('crypto-js');
 const db = require("./levelDB");
-
-/* ===== Block Class ==============================
- |  Class with a constructor for block 			   |
- |  ===============================================*/
 
 class Block {
     constructor(data) {
@@ -19,17 +11,14 @@ class Block {
     }
 }
 
-/* ===== Blockchain Class ==========================
- |  Class with a constructor for new blockchain 		|
- |  ================================================*/
-
 class Blockchain {
+    
     constructor() {
-        
         this.getBlockHeight()
             .then(async (latestBlockHeight) => {
                 if (latestBlockHeight >= 0) {
-                    console.log("genesis already exists. using existing chain");
+                    console.log("genesis already exists. " +
+                                    "new chain creation halted");
                 } else {
                     console.log("creating new chain with genesis");
                     await this.addBlock(new Block("genesis block"));
@@ -50,21 +39,22 @@ class Blockchain {
                 null,
                 true)).chainLength;
             
-            // Block height
+            // blockHeight after this block is added = previous
+            // ChainLength
             newBlock.height = chainLength;
             
-            // UTC timestamp
+            // add current UTC timestamp to body
             newBlock.time = new Date().getTime().toString().slice(0, -3);
             
-            // previous block hash
+            // populate previous block hash field
             if (chainLength > 0) {
                 let latestBlockHeight = await this.getBlockHeight();
-                
                 newBlock.previousBlockHash = (await this.getBlock(latestBlockHeight)).hash;
             }
-            // Block hash with cryotojs.SHA256 using newBlock and
+            
+            // Block hash with cryptojs.SHA256 using newBlock and
             // converting to a string
-            newBlock.hash = cryotojs.SHA256(JSON.stringify(newBlock)).toString();
+            newBlock.hash = cryptojs.SHA256(JSON.stringify(newBlock)).toString();
             
             // Adding block object to chain
             await db.readAllOrWriteToLevelDB(newBlock.height,
@@ -75,21 +65,19 @@ class Blockchain {
         
     }
     
-    // Get block height
+    // Returns the the height of the last added block
     async getBlockHeight() {
+        
         try {
             return ((await db.readAllOrWriteToLevelDB(null,
                                                       null,
-                                                      true))
-                .chainLength) - 1;
+                                                      true)).chainLength) - 1;
         } catch (e) {
             return e;
         }
     }
     
-    // JSON.parse(JSON.stringify(this.chain[blockHeight]))
-    
-    // get block
+    // get block when a blockHeight is supplied as key for DB query
     async getBlock(blockHeight) {
         // return object as a single string
         return JSON.parse(await db.getLevelDBData(blockHeight));
@@ -97,6 +85,7 @@ class Blockchain {
     
     // validate block
     async validateBlock(blockHeight) {
+        
         // get block object
         let block = await this.getBlock(blockHeight);
         // get block hash
@@ -104,12 +93,14 @@ class Blockchain {
         // remove block hash to test block integrity
         block.hash = '';
         // generate block hash
-        let validBlockHash = cryotojs.SHA256(JSON.stringify(block)).toString();
+        let validBlockHash = cryptojs.SHA256(JSON.stringify(block)).toString();
         // Compare
         if (blockHash === validBlockHash) {
             return true;
         } else {
-            console.log('Block #' + blockHeight + ' invalid hash:\n' + blockHash + '<>' + validBlockHash);
+            console.log(`Block no: ${blockHeight} has invalid hash. \n
+            Calculated Hash is: ${blockHash} \n
+            Valid Hash is: ${validBlockHash}`);
             return false;
         }
     }
@@ -121,27 +112,21 @@ class Blockchain {
         
         for (let blockHeight = 0; blockHeight <= latestBlockHeight; blockHeight++) {
             
-            
-            
             // validate block
             if (!(await this.validateBlock(blockHeight))) {
                 errorLog.push(blockHeight);
             }
             
-            if (blockHeight !== latestBlockHeight) {
-                // get the current block and next block
-            let iterBlock = await this.getBlock(blockHeight);
-            let iterNextBlock = await this.getBlock(blockHeight + 1);
-                // compare blocks hash link
-            let blockHash = iterBlock.hash;
-            let previousHash = iterNextBlock.previousBlockHash;
-            if (blockHash !== previousHash) {
-                errorLog.push(blockHeight);
+            if (blockHeight < latestBlockHeight) {
+                let currentBlockHash = (await this.getBlock(blockHeight)).hash;
+                let nextBlockHash = (await this.getBlock(blockHeight + 1)).previousBlockHash;
+                
+                if (nextBlockHash !== currentBlockHash) {
+                    errorLog.push(blockHeight);
+                }
             }
-            
-            }
-            
         }
+        
         if (errorLog.length > 0) {
             console.log('Block errors = ' + errorLog.length);
             console.log('Blocks: ' + errorLog);
@@ -150,25 +135,3 @@ class Blockchain {
         }
     }
 }
-
-let chain = new Blockchain();
-
-chain.getBlock(0).then((block) => {console.log(block);}).catch((err) => {console.log(err);});
-
-chain.getBlockHeight().then((block) => {console.log(block);}).catch((err) => {console.log(err);});
-
-chain.addBlock(new Block('block')).then((res) => {console.log(res);}).catch((err) => {console.log(err);});
-
-db.readAllOrWriteToLevelDB(null, null, true).then((res) => {console.log(res);});
-
-chain.validateBlock(0).then((block) => {console.log(block);}).catch((err) => {console.log(err);});
-
-chain.validateChain().then((block) => {console.log(block);}).catch((err) => {console.log(err);});
-
-db.readAllOrWriteToLevelDB(7, JSON.stringify({
-    hash: "hackhash",
-    height: 7,
-    body: "hackdata",
-    time: "1559976065",
-    previousBlockHash: "5edb94433459b5329716aef2d56c2f7bfac06269414eeff982694646741b9568"
-}), false).then((res) => {console.log(res);});
