@@ -15,7 +15,7 @@ REST API web service to allow clients to easily interact with the
 blockchain backend using a REST client. The entry point of the 
 project is the file named `app.js`. Any NodeJS interpreter can be 
 used to run the file, which will spawn a local server in the `PORT: 
-8000`. A user can make use of any REST Client like [Postman]. 
+8000`. A user can make use of any REST Client like [Postman](https://www.getpostman.com/). 
 
 The endpoint for GET-ting a block with a specific blockheight is:
 
