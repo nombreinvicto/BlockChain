@@ -1,5 +1,5 @@
 
-### Project 2: Design of a NodeJS based "no-consensus" Private BlockChain with REST API Interface
+### Project 3: Design of a NodeJS based "no-consensus" Private BlockChain with REST API Interface
 
 <p align="center">
     <img width="300" height="150"
