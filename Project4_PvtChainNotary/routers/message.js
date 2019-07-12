@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {requestCache} = require('./requestValidation');
+const {requestCache, validationWindowTime} = require('./requestValidation');
 const {messageValidationSchema, validateBody} = require('../utility/joi');
 const verifySignature = require('../utility/btc');
 
@@ -35,7 +35,7 @@ router.post('/validate', async (req, res) => {
                 let requestTimeStamp = requestCache[walletAddress].status.requestTimeStamp;
                 let currentTime = new Date().getTime().toString().slice(0, -3);
                 let timeElapased = currentTime - requestTimeStamp;
-                requesttorObject.status.validationWindow = 300 - timeElapased;
+                requesttorObject.status.validationWindow = validationWindowTime - timeElapased;
                 return res.status(202).send(requesttorObject);
             }
             
@@ -56,7 +56,7 @@ router.post('/validate', async (req, res) => {
                     address: walletAddress,
                     requestTimeStamp: requestTimeStamp,
                     message: message,
-                    validationWindow: 300 - timeElapased,
+                    validationWindow: validationWindowTime - timeElapased,
                     messageSignature: true
                 }
             };

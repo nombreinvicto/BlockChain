@@ -9,6 +9,7 @@ const walletAddrValidator = require('wallet-address-validator');
 
 // create the global requester cache
 let requestCache = {};
+let validationWindowTime = 100;
 
 // POST request to request validate - initiates
 // the notarisation process
@@ -48,7 +49,7 @@ router.post('/', async (req, res) => {
             // window. first get the current time
             let currentTimeStamp = new Date().getTime().toString().slice(0, -3);
             let timeElapsed = currentTimeStamp - requesterObject.requestTimeStamp;
-            requesterObject.validationWindow = 300 - timeElapsed;
+            requesterObject.validationWindow = validationWindowTime - timeElapsed;
         } else {
             // if requester doesnt exist, then add him to cache
             let requestTimeStamp = new Date().getTime().toString().slice(0, -3);
@@ -56,7 +57,7 @@ router.post('/', async (req, res) => {
                 walletAddress: walletAddress,
                 requestTimeStamp: requestTimeStamp,
                 message: walletAddress + ':' + requestTimeStamp + ':starRegistry',
-                validationWindow: 300
+                validationWindow: validationWindowTime
             };
             
             // add new requester to cache
@@ -77,5 +78,6 @@ router.post('/', async (req, res) => {
 
 module.exports = {
     router,
-    requestCache
+    requestCache,
+    validationWindowTime
 };
