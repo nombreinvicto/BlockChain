@@ -60,6 +60,7 @@ digital asset:
 `http://localhost:8000/block`
 
 The request should contain:
+
 `{
     "address": "19xaiMqayaNrn3x7AjV5cU4Mk5f5prRVpL",
     "star": {
