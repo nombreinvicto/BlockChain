@@ -34,9 +34,18 @@ router.post('/', async (req, res) => {
         // if validation passes, check if requester already in cache
         let requesterObject = requestCache[walletAddress];
         if (requesterObject) {
-            // if requester exists, then reduce his validation window
+            // if requester exists, first check he is not already
+            // in message signature process
+            if (requesterObject.registerStar) {
+                throw new Error('Requestor already in post' +
+                                    ' message signature' +
+                                    ' validation phase.' +
+                                    ' Additional request' +
+                                    ' initiation not possible.');
+            }
             
-            // get the current time
+            // if thats not the case, then reduce his validation
+            // window. first get the current time
             let currentTimeStamp = new Date().getTime().toString().slice(0, -3);
             let timeElapsed = currentTimeStamp - requesterObject.requestTimeStamp;
             requesterObject.validationWindow = 300 - timeElapsed;

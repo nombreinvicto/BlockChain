@@ -8,7 +8,6 @@ let db = level(chainDB);
 
 // Add data to levelDB with key/value pair
 function addLevelDBData(key, value) {
-    
     return new Promise((resolve, reject) => {
         db.put(key, value, function (err) {
             if (err) {
@@ -18,12 +17,10 @@ function addLevelDBData(key, value) {
             }
         });
     });
-    
 }
 
 // Get data from levelDB with key
 function getLevelDBData(key) {
-    
     return new Promise((resolve, reject) => {
         db.get(key, function (err, value) {
             if (err) {
@@ -33,20 +30,33 @@ function getLevelDBData(key) {
             }
         });
     });
-    
 }
 
 // Add data to levelDB with value and key or Read all data from the DB
-function readAllOrWriteToLevelDB(key, value, readFlag = false, tableId) {
+function readAllOrWriteToLevelDB(key, value, readFlag = false, tableId, walletaddres) {
     
     return new Promise((resolve, reject) => {
         let dataCounter = 0;
         let dataArray = [];
         
         db.createReadStream().on('data', function (data) {
-            if (data.key[0] === tableId.toString()) {
-                dataCounter++;
-                dataArray.push(data);
+            // this data var is a JSON object with a key property
+            //which is a string and a value property also a string
+            if (tableId.toString() !== '2') {
+                // if table id not '2' means not doing a hash to
+                // wallet address query
+                if (data.key[0] === tableId.toString()) {
+                    dataCounter++;
+                    dataArray.push(data);
+                }
+            } else if (tableId.toString() === '2') {
+                // if tableid is 2, means we are doing a block
+                // height to wallet address query
+                
+                if (data.value.toString() === walletaddres) {
+                    dataCounter++;
+                    dataArray.push(data.key);
+                }
             }
             
         }).on('error', function (err) {
@@ -70,7 +80,6 @@ function readAllOrWriteToLevelDB(key, value, readFlag = false, tableId) {
             }
         });
     });
-    
 }
 
 module.exports = {

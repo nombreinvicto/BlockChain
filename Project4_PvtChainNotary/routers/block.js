@@ -40,6 +40,10 @@ router.post('/', async (req, res) => {
         // if validation passes, create a new block
         let newBlock = new Block(reqBody);
         let blockAddResult = await blockchain.addBlock(newBlock);
+        
+        // once block is created, immediately clear the requestor
+        // in the cache even if time has not elapsed fully
+        delete requestCache[walletAddress];
         return res.send(blockAddResult);
     } catch (e) {
         return res.status(404).send(e.message);
@@ -65,7 +69,6 @@ router.get('/:blockHeight', async (req, res) => {
 
 // GET ALL blocks in chain
 router.get('/', async (req, res) => {
-    
     let allBlocks = await blockchain.getALLBlocks();
     res.status(202).send(allBlocks);
 });

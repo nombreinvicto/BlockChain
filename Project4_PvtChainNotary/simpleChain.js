@@ -34,7 +34,6 @@ class Blockchain {
     async addBlock(newBlock) {
         
         // first check if genesis block or other blocks exist or not
-        
         try {
             let chainLength = (await db.readAllOrWriteToLevelDB(
                 null,
@@ -63,9 +62,9 @@ class Blockchain {
             await db.readAllOrWriteToLevelDB([1, newBlock.hash],
                                              newBlock.height, false, 1);
             
-            // Second save walletaddress - table 2: height -> addr
-            await db.readAllOrWriteToLevelDB([2, newBlock.body.address],
-                                             newBlock.height, false, 2);
+            // Second save address - table 2: blockheight -> addr
+            await db.readAllOrWriteToLevelDB([2, newBlock.height],
+                                             newBlock.body.address, false, 2);
             
             // Adding block to chain - table 3: blockheight-> block
             await db.readAllOrWriteToLevelDB([3, newBlock.height],
@@ -79,7 +78,6 @@ class Blockchain {
     
     // Returns the the height of the last added block
     async getBlockHeight() {
-        
         try {
             return ((await db.readAllOrWriteToLevelDB(null,
                                                       null,
@@ -101,9 +99,8 @@ class Blockchain {
     }
     
     async getBlockWithHash(hash) {
-        
         try {
-            // first get the blockheight corresponding to hash
+            // first get the blockheights corresponding to hash
             let blockHeight = await db.getLevelDBData('1,' + hash);
             
             // next get the block corr to blockHeight
@@ -114,15 +111,25 @@ class Blockchain {
         }
     }
     
-    async getBlockWithAddr(addr) {
-        
+    async getBlockWithAddress(addr) {
+        let blockHeightArray = [];
         try {
-            // first get the blockheight corresponding to address
-            let blockHeight = await db.getLevelDBData('2,' + addr);
-            blockHeight = parseInt(blockHeight);
+            // get all the blockheights (as keys) corr to wallet
+            let allBlockHeights = (await db.readAllOrWriteToLevelDB(null,
+                                                                   null,
+                                                                   true,
+                                                                   2,
+                                                                   addr)).data;
+            
+            for (let keyString of allBlockHeights) {
+                let blockHeight = keyString.slice(2,);
+                // now get the block
+                let block = await this.getBlock(parseInt(blockHeight));
+                blockHeightArray.push(block);
+            }
             
             // next get the block corr to blockHeight
-            return JSON.parse(await db.getLevelDBData('3,' + blockHeight));
+            return blockHeightArray;
         } catch (e) {
             return e;
         }
@@ -130,7 +137,6 @@ class Blockchain {
     
     // validate block
     async validateBlock(blockHeight) {
-        
         // get block object
         let block = await this.getBlock(blockHeight);
         // get block hash
