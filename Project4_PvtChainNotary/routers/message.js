@@ -6,6 +6,7 @@ const verifySignature = require('../utility/btc');
 
 // POST request to request validate message signature
 router.post('/validate', async (req, res) => {
+    
     try {
         const validationResult = validateBody(req.body, messageValidationSchema);
         if (validationResult.error) {
@@ -14,7 +15,6 @@ router.post('/validate', async (req, res) => {
         }
         
         let walletAddress = req.body.address;
-        
         // if address is valid BTC, check if request has been made
         // within valid window or not
         if (!requestCache[walletAddress]) {
@@ -36,7 +36,6 @@ router.post('/validate', async (req, res) => {
         let requestTimeStamp = requestCache[walletAddress].requestTimeStamp;
         let currentTime = new Date().getTime().toString().slice(0, -3);
         let timeElapased = currentTime - requestTimeStamp;
-        
         let response = {
             registerStar: true,
             status: {
@@ -47,11 +46,11 @@ router.post('/validate', async (req, res) => {
                 messageSignature: true
             }
         };
+        
         // update the cache object for the wallet address to
         // indicate it can now regiter a star
         requestCache[walletAddress] = response;
         return res.status(202).send(response);
-        
     } catch (e) {
         return res.status(404).send(e.message);
     }

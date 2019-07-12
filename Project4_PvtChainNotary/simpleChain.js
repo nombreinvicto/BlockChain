@@ -2,6 +2,7 @@ const cryptojs = require('crypto-js');
 const db = require("./levelDB");
 
 class Block {
+    
     constructor(data) {
         this.hash = "";
         this.height = 0;
@@ -33,11 +34,13 @@ class Blockchain {
     async addBlock(newBlock) {
         
         // first check if genesis block or other blocks exist or not
+        
         try {
             let chainLength = (await db.readAllOrWriteToLevelDB(
                 null,
                 null,
-                true)).chainLength;
+                true,
+                3)).chainLength;
             
             // blockHeight after this block is added = previous
             // ChainLength
@@ -51,14 +54,22 @@ class Blockchain {
                 let latestBlockHeight = await this.getBlockHeight();
                 newBlock.previousBlockHash = (await this.getBlock(latestBlockHeight)).hash;
             }
-            
             // Block hash with cryptojs.SHA256 using newBlock and
             // converting to a string
             newBlock.hash = cryptojs.SHA256(JSON.stringify(newBlock)).toString();
             
-            // Adding block object to chain
-            await db.readAllOrWriteToLevelDB(newBlock.height,
-                                             JSON.stringify(newBlock).toString());
+            // First save hash to - table 1: hash-> blockheight
+            // hash to blockHeight is 1:1 relation
+            await db.readAllOrWriteToLevelDB([1, newBlock.hash],
+                                             newBlock.height, false, 1);
+            
+            // Second save walletaddress - table 2: height -> addr
+            await db.readAllOrWriteToLevelDB([2, newBlock.body.address],
+                                             newBlock.height, false, 2);
+            
+            // Adding block to chain - table 3: blockheight-> block
+            await db.readAllOrWriteToLevelDB([3, newBlock.height],
+                                             JSON.stringify(newBlock).toString(), false, 3);
             return await this.getBlock(chainLength);
         } catch (e) {
             return e;
@@ -72,7 +83,8 @@ class Blockchain {
         try {
             return ((await db.readAllOrWriteToLevelDB(null,
                                                       null,
-                                                      true)).chainLength) - 1;
+                                                      true,
+                                                      3)).chainLength) - 1;
         } catch (e) {
             return e;
         }
@@ -82,11 +94,38 @@ class Blockchain {
     async getBlock(blockHeight) {
         // return object as a single string
         try {
-            return JSON.parse(await db.getLevelDBData(blockHeight));
+            return JSON.parse(await db.getLevelDBData([3, blockHeight]));
         } catch (e) {
             return e;
         }
+    }
+    
+    async getBlockWithHash(hash) {
         
+        try {
+            // first get the blockheight corresponding to hash
+            let blockHeight = await db.getLevelDBData('1,' + hash);
+            
+            // next get the block corr to blockHeight
+            return JSON.parse(await db.getLevelDBData('3,' + blockHeight));
+            
+        } catch (e) {
+            return e;
+        }
+    }
+    
+    async getBlockWithAddr(addr) {
+        
+        try {
+            // first get the blockheight corresponding to address
+            let blockHeight = await db.getLevelDBData('2,' + addr);
+            blockHeight = parseInt(blockHeight);
+            
+            // next get the block corr to blockHeight
+            return JSON.parse(await db.getLevelDBData('3,' + blockHeight));
+        } catch (e) {
+            return e;
+        }
     }
     
     // validate block
@@ -144,7 +183,7 @@ class Blockchain {
     // get all blocks
     async getALLBlocks() {
         try {
-            let allBlocks = await db.readAllOrWriteToLevelDB(null, null, true);
+            let allBlocks = await db.readAllOrWriteToLevelDB(null, null, true, 3);
             return allBlocks;
         } catch (e) {
             return e.message;
@@ -154,5 +193,5 @@ class Blockchain {
 
 module.exports = {
     Block,
-    Blockchain
+    Blockchain,
 };

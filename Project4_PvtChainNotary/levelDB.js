@@ -22,10 +22,10 @@ function addLevelDBData(key, value) {
 }
 
 // Get data from levelDB with key
-function getLevelDBData(blockHeight) {
+function getLevelDBData(key) {
     
     return new Promise((resolve, reject) => {
-        db.get(blockHeight, function (err, value) {
+        db.get(key, function (err, value) {
             if (err) {
                 reject(err.message);
             } else {
@@ -37,15 +37,18 @@ function getLevelDBData(blockHeight) {
 }
 
 // Add data to levelDB with value and key or Read all data from the DB
-function readAllOrWriteToLevelDB(key, value, readFlag = false) {
+function readAllOrWriteToLevelDB(key, value, readFlag = false, tableId) {
     
     return new Promise((resolve, reject) => {
         let dataCounter = 0;
         let dataArray = [];
         
         db.createReadStream().on('data', function (data) {
-            dataCounter++;
-            dataArray.push(data);
+            if (data.key[0] === tableId.toString()) {
+                dataCounter++;
+                dataArray.push(data);
+            }
+            
         }).on('error', function (err) {
             reject(err.message);
         }).on('close', function () {
@@ -69,8 +72,6 @@ function readAllOrWriteToLevelDB(key, value, readFlag = false) {
     });
     
 }
-
-
 
 module.exports = {
     getLevelDBData,

@@ -13,6 +13,7 @@ let requestCache = {};
 // POST request to request validate - initiates
 // the notarisation process
 router.post('/', async (req, res) => {
+    
     try {
         const validationResult = validateBody(req.body, requestValidationSchema);
         if (validationResult.error) {
@@ -39,7 +40,6 @@ router.post('/', async (req, res) => {
             let currentTimeStamp = new Date().getTime().toString().slice(0, -3);
             let timeElapsed = currentTimeStamp - requesterObject.requestTimeStamp;
             requesterObject.validationWindow = 300 - timeElapsed;
-            
         } else {
             // if requester doesnt exist, then add him to cache
             let requestTimeStamp = new Date().getTime().toString().slice(0, -3);
@@ -49,6 +49,7 @@ router.post('/', async (req, res) => {
                 message: walletAddress + ':' + requestTimeStamp + ':starRegistry',
                 validationWindow: 300
             };
+            
             // add new requester to cache
             requestCache[walletAddress] = requesterObject;
             
@@ -60,7 +61,6 @@ router.post('/', async (req, res) => {
         }
         // otherwise proceed with the request and reply to the user
         return res.status(202).send(requesterObject);
-        
     } catch (e) {
         return res.status(404).send(e.message);
     }

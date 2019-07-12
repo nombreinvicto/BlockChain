@@ -2,10 +2,8 @@ const express = require("express");
 const router = express.Router();
 const {Block, Blockchain} = require("../simpleChain");
 const {
-    bodySchema,
     validateBody,
     starRegisterSchema
-    
 } = require('../utility/joi');
 const {requestCache} = require('./requestValidation');
 const {ASCII2Hexa, Hexa2ASCII} = require('../utility/encodeDecode');
@@ -15,6 +13,7 @@ let blockchain = new Blockchain();
 
 // POST a star block to chain after registration validated
 router.post('/', async (req, res) => {
+    
     try {
         
         // first validate the request body if it is in the right
@@ -42,7 +41,6 @@ router.post('/', async (req, res) => {
         let newBlock = new Block(reqBody);
         let blockAddResult = await blockchain.addBlock(newBlock);
         return res.send(blockAddResult);
-        
     } catch (e) {
         return res.status(404).send(e.message);
     }
@@ -51,16 +49,28 @@ router.post('/', async (req, res) => {
 
 // GET a star by blockheight
 router.get('/:blockHeight', async (req, res) => {
+    
     const blockHeight = parseInt(req.params.blockHeight);
-    if (Number.isNaN(blockHeight)) {
+    if (Number.isNaN(blockHeight) || blockHeight < 0) {
         return res.status(404)
                   .send('Invalid parameter for block height.');
     } else {
         let block = await blockchain.getBlock(blockHeight);
-        block.body.star.storyDecoded = Hexa2ASCII(block.body.star.story);
+        if (block.body) {
+            block.body.star.storyDecoded = Hexa2ASCII(block.body.star.story);
+        }
         return res.send(block);
     }
-    
 });
 
-module.exports = router;
+// GET ALL blocks in chain
+router.get('/', async (req, res) => {
+    
+    let allBlocks = await blockchain.getALLBlocks();
+    res.status(202).send(allBlocks);
+});
+
+module.exports = {
+    router,
+    blockchain
+};
