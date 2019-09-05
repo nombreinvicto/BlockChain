@@ -3,8 +3,6 @@ pragma solidity >=0.4.24;
 import "./SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 
-
-
 // get all the external contract signatures
 contract Sourcer {
     // define a function to check if an address is a sourcer or not
@@ -64,7 +62,7 @@ contract SupplyChain is ERC721 {
     mapping(uint => Asset) upcToAssetMapping;
     
     // define a mapping that maps upc to array of txhash
-    mapping(uint => string[]) upcToAssetTxHistory;
+    mapping(uint => string[]) upcToAssetTxHistory; // how to implement
     
     
     
@@ -75,11 +73,17 @@ contract SupplyChain is ERC721 {
     // define mapping of unique purchase order to volume and material classes
     mapping(uint => mapping(string => uint)) internal purchaseOrderToVolMatDetails;
     
-    //mapping that tracks the purchase order status by mapping to max allowable day for customer to make order
+    //define mapping of unique purchase order to consumer details
+    mapping(uint => mapping(string => string)) internal purchaseOrderToCustomerDetails;
+    
+    //mapping that tracks time stamp of generation of purchase order
     mapping(uint => uint) purchaseOrderToTimeStampMapping;
     
     // mapping that tracks validity of purchase order
     mapping(uint => bool) purchaseOrderToStatusMapping;
+    
+    // mapping that maps purchase order to upc of asset
+    mapping(uint => uint) purchaseOrderToUpcMapping;
     
     
     
@@ -100,6 +104,7 @@ contract SupplyChain is ERC721 {
     uint[] internal volumeClassToFactorMappingKeys;
     uint[] internal materialClassToUnitPriceMappingKeys;
     uint[] public purchaseOrdersSendingMakeOrders;
+    uint[] public pendingPurchaseOrders;
     
     
     // define enum state with states from sequence diagram
@@ -169,6 +174,13 @@ contract SupplyChain is ERC721 {
         require(c_contract.isConsumer(caller), "calling address doesnt have permission to initiate purchase order. Address has to be approved consumer.");
         _;
     }
+    
+    // define a modifier for functions that can only be called by the sourcer
+    modifier onlySourcer (address caller) {
+        require(s_contract.isSourcer(caller), "calling address doesnt have permission to call this function. Address has to be approved sourcer");
+        _;
+    }
+    
     ///////////////////////////////// modifier below this line are related to events////////////////////////////////////////////////////////////////////////
     
     // define a modifier that checks if an asset.state of a upc is Sourced or not
@@ -278,6 +290,10 @@ contract SupplyChain is ERC721 {
         purchaseOrderToStatusMapping[purchaseOrder] = true;
         
         (_price, _completionTime) = createQuoteForCustomer(volumeClass, materialClass);
+        
+        purchaseOrderToCustomerDetails[purchaseOrder]["custName"] = custName;
+        purchaseOrderToCustomerDetails[purchaseOrder]["custLoc"] = custLoc;
+        
         purchaseOrderToVolMatDetails[purchaseOrder]["volumeClass"] = volumeClass;
         purchaseOrderToVolMatDetails[purchaseOrder]["materialClass"] = materialClass;
         purchaseOrderToVolMatDetails[purchaseOrder]["price"] = _price;
@@ -291,6 +307,12 @@ contract SupplyChain is ERC721 {
     function createQuoteForCustomer(uint volumeClass, uint materialClass) internal view returns (uint, uint){
         uint materialClassUnitPrice = materialClassToUnitPriceMapping[materialClass];
         uint volumeFactor = volumeClassToFactorMapping[volumeClass];
+        
+        // making sure consumer is not passing invalid volume or material class
+        if (materialClassUnitPrice == 0 || volumeClass == 0) {
+            revert("invalid volume and material class meta info passed to smart contract. make sure they are non-zero/non-negative.");
+        }
+        
         uint price = materialClassUnitPrice.mul(volumeFactor);
         uint completionTime = volumeClassToDaysMapping[volumeClass];
         return (price, completionTime);
@@ -300,9 +322,13 @@ contract SupplyChain is ERC721 {
     function makeOrder(uint purchaseOrder) public payable onlyConsumer(msg.sender) {
         //require(c_contract.isConsumer(msg.sender), "calling address doesnt have permission to initiate make order. Address has to be approved consumer.");
         
+        // check if a product already exists for this purchase order
+        require(purchaseOrderToUpcMapping[purchaseOrder] == 0, "this purchase order already has an existing asset");
+        
+        // checking that whosoever is doing the make order, he has already passed the intiate purchase order step
         require(purchaseOrderToConsumerAddressMapping[purchaseOrder] != address(0), "there are no existing records of the given purchase order.");
         
-        // incase of invalid purchase order
+        // checking the whosoever is making the make order is the same person who initiated the purchase order
         require(purchaseOrderToConsumerAddressMapping[purchaseOrder] == msg.sender, "consumer making make order request has no existing purchase order. please start with initiating purchase order.");
         
         // check make order already sent or not
@@ -337,6 +363,62 @@ contract SupplyChain is ERC721 {
         
         
     }
+    
+    // source material
+    function sourceMaterial(uint purchaseOrder) public onlySourcer(msg.sender) {
+        
+        // create an asset against the pending purchase order
+        uint[] memory pos = getAllPendingOrders();
+        //  this reupdates the pending purchase order arrays
+        require(isThisPurchaseOrderPending(purchaseOrder), "this purchase order doesnt have a pending make request");
+        
+        // if it is not pending then create an ERC721 token asset against it
+        sku = sku + 1;
+        // increment the sku
+        address customerAddress = purchaseOrderToConsumerAddressMapping[purchaseOrder];
+        string memory customerName = purchaseOrderToCustomerDetails[purchaseOrder]["custName"];
+        string memory customerLoc = purchaseOrderToCustomerDetails[purchaseOrder]["custName"];
+        
+        // generate a upc
+        uint upc = generateUPC(customerName, customerLoc, purchaseOrder);
+        uint price = purchaseOrderToVolMatDetails[purchaseOrder]["price"];
+        
+        // now create the asset
+        Asset memory newAsset = Asset(upc,
+            price,
+            msg.sender,
+            address(0),
+            address(0),
+            address(0),
+            address(0),
+            purchaseOrderToConsumerAddressMapping[purchaseOrder],
+            customerName,
+            customerLoc,
+            State.Sourced);
+        
+        // update the sku to upc mapping
+        skuToUpcMapping[sku] = upc;
+        
+        // update the upc to asset mapping
+        upcToAssetMapping[upc] = newAsset;
+        
+        //update purchase order to upc mapping
+        purchaseOrderToUpcMapping[purchaseOrder] = upc;
+        
+        // now mint the ERC721 asset in the name of the sourcer
+        _mint(msg.sender, upc);
+        
+        // emit the sourced event
+        emit Sourced(upc);
+        
+    }
+    
+    // sourcer function to emit ship event to the cnc owner
+    function shipPartToCNC (uint upc) public onlySourcer(msg.sender) {
+        emit BlankShipped(upc);
+    }
+    
+    
     
     ///////////////////////////////// helper or utility functions below this line////////////////////////////////////////////////////////////////////////
     function generatePurchaseOrder(string _a, string _b, uint _v, uint _m) internal view returns (uint) {
@@ -407,13 +489,44 @@ contract SupplyChain is ERC721 {
         // returning via tuple types
     }
     
-    function makeOrderAlreadySent(uint _purchaseOrder) internal returns (bool) {
+    function makeOrderAlreadySent(uint _purchaseOrder) internal view returns (bool) {
         for (uint i = 0; i <= purchaseOrdersSendingMakeOrders.length; i++) {
             if (purchaseOrdersSendingMakeOrders[i] == _purchaseOrder) {
                 return true;
             }
         }
         return false;
+    }
+    
+    // function that sourcer calls to get a list of pending purchase orders
+    function getAllPendingOrders() public returns (uint []) {
+        // first reset global array to zero
+        pendingPurchaseOrders.length = 0;
+        
+        for (uint i = 0; i <= purchaseOrdersSendingMakeOrders.length; i++) {
+            uint purchaseOrder = purchaseOrdersSendingMakeOrders[i];
+            if (purchaseOrderToStatusMapping[purchaseOrder]) {
+                pendingPurchaseOrders.push(purchaseOrder);
+            }
+        }
+        return pendingPurchaseOrders;
+    }
+    
+    function isThisPurchaseOrderPending(uint purchaseOrder) internal view returns (bool){
+        
+        for (uint i = 0; i <= pendingPurchaseOrders.length; i++) {
+            uint po = pendingPurchaseOrders[i];
+            if (po == purchaseOrder) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    function killContract() public {
+        if (msg.sender == supplyChainContractOwner) {
+            selfdestruct(supplyChainContractOwner);
+        }
     }
     
     
