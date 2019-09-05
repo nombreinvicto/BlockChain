@@ -62,7 +62,7 @@ contract SupplyChain is ERC721 {
     mapping(uint => Asset) upcToAssetMapping;
     
     // define a mapping that maps upc to array of txhash
-    mapping(uint => string[]) upcToAssetTxHistory; // how to implement
+    mapping(uint => string[]) upcToAssetTxHistory; // how to implement?
     
     
     
@@ -181,6 +181,21 @@ contract SupplyChain is ERC721 {
         _;
     }
     
+    modifier onlyCncOwner(address caller) {
+        require(co_contract.iscncOwner(caller), "calling address is not a valid cnc owner");
+        _;
+    }
+    
+    modifier onlyVerifier (address caller) {
+        require(v_contract.isVerifier(caller), "calling address is not a valid QA verifier");
+        _;
+    }
+    
+    modifier onlyDistributor (address caller) {
+        require(d_contract.isDistributor(caller), "calling address is not a valid distributor in the chain");
+        _;
+    }
+    
     ///////////////////////////////// modifier below this line are related to events////////////////////////////////////////////////////////////////////////
     
     // define a modifier that checks if an asset.state of a upc is Sourced or not
@@ -189,11 +204,6 @@ contract SupplyChain is ERC721 {
         _;
     }
     
-    // define a modifier that checks if an asset.state of a upc is Processed or not
-    modifier processed(uint upc) {
-        require(upcToAssetMapping[upc].assetState == State.Processed, "asset has not been processed yet by the sourcer");
-        _;
-    }
     
     // define a modifier that checks if an asset.state of a upc is BlankShipped or not
     modifier blankShipped(uint upc) {
@@ -414,8 +424,50 @@ contract SupplyChain is ERC721 {
     }
     
     // sourcer function to emit ship event to the cnc owner
-    function shipPartToCNC (uint upc) public onlySourcer(msg.sender) {
+    function shipPartToCNC(uint upc) public onlySourcer(msg.sender) sourced(upc){
+        upcToAssetMapping[upc].assetState = State.BlankShipped;
         emit BlankShipped(upc);
+    }
+    
+    // generate part function by the CNC owner
+    function generatePart(uint upc) public onlyCncOwner(msg.sender) blankShipped(upc) {
+        upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
+        upcToAssetMapping[upc].cncOwnerAddress = msg.sender;
+        upcToAssetMapping[upc].assetState = State.PartGenerated;
+        emit PartGenerated(upc);
+    }
+    
+    // cnc owner function to emit ship event to verifier
+    function shipPartToVerifier (uint upc) public onlyCncOwner(msg.sender) partGenerated(upc){
+        upcToAssetMapping[upc].assetState = State.PartShipped;
+        emit PartShipped(upc);
+    }
+    
+    // verify part function by the verifier
+    function verifyPart (uint upc) public onlyVerifier(msg.sender) partShipped(upc){
+        upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
+        upcToAssetMapping[upc].verifierAddress = msg.sender;
+        upcToAssetMapping[upc].assetState = State.Verified;
+        emit Verified(upc);
+    }
+    
+    // verifier function to emit the ship event to the distributor
+    function shipPartToDistributor (uint upc) public onlyVerifier(msg.sender) verified(upc){
+        upcToAssetMapping[upc].assetState = State.ShippedtoDist;
+        emit ShippedtoDist(upc);
+    }
+    
+    //distribute part to the consumer from the verifier
+    function shipPartToTheConsumer (uint upc) public onlyDistributor(msg.sender) shippedToDist(upc){
+        upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
+        upcToAssetMapping[upc].distributorAddress = msg.sender;
+        upcToAssetMapping[upc].assetState = State.ShippedtoCons;
+        emit ShippedtoCons(upc);
+    }
+    
+    // consumer acknowledges part receiption
+    function acceptPart (uint upc) public onlyConsumer(msg.sender) shippedtoCons(upc) {
+    
     }
     
     
