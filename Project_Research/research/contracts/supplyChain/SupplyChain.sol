@@ -1,7 +1,7 @@
-pragma solidity >=0.4.24;
+pragma solidity >=0.5.0;
 
-import "./SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
+
 
 // get all the external contract signatures
 contract Sourcer {
@@ -32,11 +32,11 @@ contract Consumer {
 // start with the main supplyChain contract
 contract SupplyChain is ERC721 {
     // import safemath for uint
-    using SafeMath for uint;
+  
     
     // variable definitions ////////////////////////////////////////////////////////////////////////
     // define owner
-    address supplyChainContractOwner;
+    address payable supplyChainContractOwner;
     
     // declare all the actor contract addresses
     address private sourcerContractAddress;
@@ -289,7 +289,7 @@ contract SupplyChain is ERC721 {
     }
     
     // function initiatePurchaseOrder from the consumer
-    function initiatePurchaseOrder(string custName, string custLoc, uint volumeClass, uint materialClass) public onlyConsumer(msg.sender) returns (uint, uint _price, uint _completionTime){
+    function initiatePurchaseOrder(string memory custName, string memory custLoc, uint volumeClass, uint materialClass) public onlyConsumer(msg.sender) returns (uint, uint _price, uint _completionTime){
         //require(c_contract.isConsumer(msg.sender), "calling address doesnt have permission to initiate purchase order. Address has to be approved consumer.");
         require(bytes(custName).length > 0 && bytes(custLoc).length > 0 && volumeClass > 0 && materialClass > 0, "either customer, or location sent as empty string or vol/material classes sent as 0.");
         
@@ -401,7 +401,7 @@ contract SupplyChain is ERC721 {
             address(0),
             address(0),
             address(0),
-            purchaseOrderToConsumerAddressMapping[purchaseOrder],
+            customerAddress,
             customerName,
             customerLoc,
             State.Sourced);
@@ -473,13 +473,13 @@ contract SupplyChain is ERC721 {
     
     
     ///////////////////////////////// helper or utility functions below this line////////////////////////////////////////////////////////////////////////
-    function generatePurchaseOrder(string _a, string _b, uint _v, uint _m) internal view returns (uint) {
+    function generatePurchaseOrder(string memory _a, string memory _b, uint _v, uint _m) internal view returns (uint) {
         uint thisTime = now;
         // keccak of customer name, location, volume, material, current time
         return uint256(keccak256(abi.encodePacked(_a, _b, _v, _m, thisTime)));
     }
     
-    function generateUPC(string _customerName, string _customerLoc, uint _purchaseOrder) internal view returns (uint) {
+    function generateUPC(string memory _customerName, string memory _customerLoc, uint _purchaseOrder) internal view returns (uint) {
         uint thisTime = now;
         // keccak of customer name, location, purchase order and current time
         return uint256(keccak256(abi.encodePacked(_customerName, _customerLoc, _purchaseOrder, thisTime)));
@@ -521,7 +521,7 @@ contract SupplyChain is ERC721 {
         return true;
     }
     
-    function getAllMaterialClassToUnitPriceMaps() public view onlyOwner returns (uint[], uint[]){
+    function getAllMaterialClassToUnitPriceMaps() public view onlyOwner returns (uint[] memory, uint[] memory){
         uint[] memory materialUnitPriceArray = new uint[](materialClassToUnitPriceMappingKeys.length);
         for (uint i = 0; i <= materialClassToUnitPriceMappingKeys.length; i++) {
             uint key = materialClassToUnitPriceMappingKeys[i];
@@ -531,7 +531,7 @@ contract SupplyChain is ERC721 {
         // returning via tuple types
     }
     
-    function getAllVolumeClassToFactorMaps() public view onlyOwner returns (uint[], uint[]){
+    function getAllVolumeClassToFactorMaps() public view onlyOwner returns (uint[] memory, uint[] memory){
         uint[] memory volumeClassFactorArray = new uint[](volumeClassToFactorMappingKeys.length);
         for (uint i = 0; i <= volumeClassToFactorMappingKeys.length; i++) {
             uint key = volumeClassToFactorMappingKeys[i];
@@ -551,7 +551,7 @@ contract SupplyChain is ERC721 {
     }
     
     // function that sourcer calls to get a list of pending purchase orders
-    function getAllPendingOrders() public returns (uint []) {
+    function getAllPendingOrders() public returns (uint[] memory) {
         // first reset global array to zero
         pendingPurchaseOrders.length = 0;
         
