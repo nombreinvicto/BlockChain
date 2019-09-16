@@ -39,18 +39,18 @@ contract SupplyChain is ERC721 {
     address payable supplyChainContractOwner;
     
     // declare all the actor contract addresses
-    address private sourcerContractAddress;
-    address private cncOwnerContractAddress;
-    address private verfierContractAddress;
-    address private distributorContractAddress;
-    address private consumerContractAddress;
+    //address public sourcerContractAddress;
+    //address private cncOwnerContractAddress;
+    //address private verfierContractAddress;
+    //address private distributorContractAddress;
+    //address private consumerContractAddress;
     
     // create instances of all the actor contracts
-    Sourcer s_contract = Sourcer(address(0));
-    cncOwner co_contract = cncOwner(address(0));
-    Verifier v_contract = Verifier(address(0));
-    Distributor d_contract = Distributor(address(0));
-    Consumer c_contract = Consumer(address(0));
+    Sourcer s_contract = Sourcer(address(0x3258BEA7606ADaF8400211618Ea109f2C5706590));
+    cncOwner co_contract = cncOwner(address(0xD97391f0556a8C699427548DA453F400a24DB1d0));
+    Verifier v_contract = Verifier(address(0x64ed1CF06C0b5AFB773a04F5457C9575A3F8bb8e));
+    Distributor d_contract = Distributor(address(0xd9BC904fd2f784709a83C086F0Ff586f1b19b057));
+    Consumer c_contract = Consumer(address(0xF7D7850054D648acBbAd133452cBeDfC3844D170));
     
     //define a global variable to track product
     uint sku; // var for stock keeping unit- incremental integer
@@ -64,11 +64,13 @@ contract SupplyChain is ERC721 {
     // define a mapping that maps upc to array of txhash
     mapping(uint => string[]) upcToAssetTxHistory; // how to implement?
     
+    // define a mapping that connects upc to purchase order
+    mapping(uint => uint) upcToPurchaseOrderMapping;
     
     
     
     // define a mapping of unique purchase order to consumerAddress
-    mapping(uint => address) internal purchaseOrderToConsumerAddressMapping;
+    mapping(uint => address payable) public purchaseOrderToConsumerAddressMapping;
     
     // define mapping of unique purchase order to volume and material classes
     mapping(uint => mapping(string => uint)) internal purchaseOrderToVolMatDetails;
@@ -77,13 +79,16 @@ contract SupplyChain is ERC721 {
     mapping(uint => mapping(string => string)) internal purchaseOrderToCustomerDetails;
     
     //mapping that tracks time stamp of generation of purchase order
-    mapping(uint => uint) purchaseOrderToTimeStampMapping;
+    mapping(uint => uint) public purchaseOrderToTimeStampMapping;
     
     // mapping that tracks validity of purchase order
     mapping(uint => bool) purchaseOrderToStatusMapping;
     
     // mapping that maps purchase order to upc of asset
     mapping(uint => uint) purchaseOrderToUpcMapping;
+    
+     // define mapping to store purchase orders sending make orders and to store pending purchase orders
+    mapping(uint => bool)  public purchaseOrdersSendingMakeOrders;
     
     
     
@@ -94,17 +99,14 @@ contract SupplyChain is ERC721 {
     mapping(uint => uint) internal materialClassToUnitPriceMapping;
     
     // sample volumeClassToDaysMapping - to suggest how many days gonna take to machine
-    mapping(uint => uint)internal volumeClassToDaysMapping;
+    mapping(uint => uint)public volumeClassToDaysMapping;
     
     // mapping of consumerAddress to deposited amount in escrow
     mapping(address => uint) internal consumerAddressToEscrowDeposit;
     
     
-    // define dynamic arrays for storing volumeClass and MaterialClass keys
-    uint[] internal volumeClassToFactorMappingKeys;
-    uint[] internal materialClassToUnitPriceMappingKeys;
-    uint[] public purchaseOrdersSendingMakeOrders;
-    uint[] public pendingPurchaseOrders;
+    //mapping (uint => bool) public pendingPurchaseOrders;
+    //uint[] public pendingPurchaseOrders;
     
     
     // define enum state with states from sequence diagram
@@ -118,10 +120,11 @@ contract SupplyChain is ERC721 {
         PartGenerated, //6
         PartShipped, //7
         Verified, //8
-        ShippedtoDist, //9
-        ShippedtoCons, //10
-        Purchased, //11
-        Invalid        //12
+        ShippedtoDist,   //9
+        ShippedtoCons,  //10
+        ReceivedByCons, //11
+        AcceptedByCons, //12
+        RejectedByCons // 13
     }
     
     // define struct asset for asset details
@@ -131,10 +134,10 @@ contract SupplyChain is ERC721 {
         
         address currentOwnerAddress;
         address sourcerAddress;
-        address cncOwnerAddress;
+        address payable cncOwnerAddress;
         address verifierAddress;
         address distributorAddress;
-        address consumerAddress;
+        address payable consumerAddress;
         
         string consumerName;
         string consumerLocation;
@@ -158,8 +161,9 @@ contract SupplyChain is ERC721 {
     event Verified(uint upc);
     event ShippedtoDist(uint upc);
     event ShippedtoCons(uint upc);
-    event Purchased(uint upc);
-    event Invalid(uint upc);
+    event ReceivedByCons(uint upc);
+    event AcceptedByCons(uint upc);
+    event RejectedByCons(uint upc);
     
     
     /////////////////////////////////////////////////// normal modifier definitions ////////////////////////////////////////////////////////////////////////
@@ -242,9 +246,9 @@ contract SupplyChain is ERC721 {
     }
     
     
-    // define a modifier that checks if an asset.state of a upc is Purchased or not
-    modifier purchased(uint upc) {
-        require(upcToAssetMapping[upc].assetState == State.Purchased, "asset(part) has not been received yet by the consumer");
+    // define a modifier that checks if an asset.state of a upc is Received by consumer or not
+    modifier received(uint upc) {
+        require(upcToAssetMapping[upc].assetState == State.ReceivedByCons, "asset(part) has not been received yet by the consumer");
         _;
     }
     
@@ -264,6 +268,11 @@ contract SupplyChain is ERC721 {
         volumeClassToFactorMapping[1] = 10;
         volumeClassToFactorMapping[2] = 100;
         volumeClassToFactorMapping[3] = 1000;
+        
+        // populate volumeClassToDaysMapping
+        volumeClassToDaysMapping[1] = 10 days;
+        volumeClassToDaysMapping[2] = 20 days;
+        volumeClassToDaysMapping[3] = 30 days;
     }
     
     // function to update all actor contract addresses
@@ -289,32 +298,16 @@ contract SupplyChain is ERC721 {
     }
     
     // function initiatePurchaseOrder from the consumer
-    function initiatePurchaseOrder(string memory custName, string memory custLoc, uint volumeClass, uint materialClass) public onlyConsumer(msg.sender) returns (uint, uint _price, uint _completionTime){
+    function initiatePurchaseOrder(string memory custName, string memory custLoc, uint volumeClass, uint materialClass) public onlyConsumer(msg.sender) returns (uint _purchaseOrder, uint _price, uint _completionTime){
         //require(c_contract.isConsumer(msg.sender), "calling address doesnt have permission to initiate purchase order. Address has to be approved consumer.");
         require(bytes(custName).length > 0 && bytes(custLoc).length > 0 && volumeClass > 0 && materialClass > 0, "either customer, or location sent as empty string or vol/material classes sent as 0.");
         
-        uint purchaseOrder = generatePurchaseOrder(custName, custLoc, volumeClass, materialClass);
-        emit InitiatedPurchaseOrder(purchaseOrder);
-        purchaseOrderToConsumerAddressMapping[purchaseOrder] = msg.sender;
-        purchaseOrderToTimeStampMapping[purchaseOrder] = now;
-        purchaseOrderToStatusMapping[purchaseOrder] = true;
+        _purchaseOrder = uint256(keccak256(abi.encodePacked(custName, custLoc, volumeClass, materialClass, now)));
+        emit InitiatedPurchaseOrder(_purchaseOrder);
+        purchaseOrderToConsumerAddressMapping[_purchaseOrder] = msg.sender;
+        purchaseOrderToTimeStampMapping[_purchaseOrder] = now;
+        purchaseOrderToStatusMapping[_purchaseOrder] = true;
         
-        (_price, _completionTime) = createQuoteForCustomer(volumeClass, materialClass);
-        
-        purchaseOrderToCustomerDetails[purchaseOrder]["custName"] = custName;
-        purchaseOrderToCustomerDetails[purchaseOrder]["custLoc"] = custLoc;
-        
-        purchaseOrderToVolMatDetails[purchaseOrder]["volumeClass"] = volumeClass;
-        purchaseOrderToVolMatDetails[purchaseOrder]["materialClass"] = materialClass;
-        purchaseOrderToVolMatDetails[purchaseOrder]["price"] = _price;
-        // also storing price
-        
-        emit CreateQuoteForCustomer(purchaseOrder);
-        return (purchaseOrder, _price, _completionTime);
-    }
-    
-    // function that is automatically called to create the quote
-    function createQuoteForCustomer(uint volumeClass, uint materialClass) internal view returns (uint, uint){
         uint materialClassUnitPrice = materialClassToUnitPriceMapping[materialClass];
         uint volumeFactor = volumeClassToFactorMapping[volumeClass];
         
@@ -323,14 +316,23 @@ contract SupplyChain is ERC721 {
             revert("invalid volume and material class meta info passed to smart contract. make sure they are non-zero/non-negative.");
         }
         
-        uint price = materialClassUnitPrice.mul(volumeFactor);
-        uint completionTime = volumeClassToDaysMapping[volumeClass];
-        return (price, completionTime);
+        _price = materialClassUnitPrice*volumeFactor;
+        _completionTime = volumeClassToDaysMapping[volumeClass];
+        
+        purchaseOrderToCustomerDetails[_purchaseOrder]["custName"] = custName;
+        purchaseOrderToCustomerDetails[_purchaseOrder]["custLoc"] = custLoc;
+        
+        purchaseOrderToVolMatDetails[_purchaseOrder]["volumeClass"] = volumeClass;
+        purchaseOrderToVolMatDetails[_purchaseOrder]["materialClass"] = materialClass;
+        purchaseOrderToVolMatDetails[_purchaseOrder]["price"] = _price;
+        // also storing price
+        
+        emit CreateQuoteForCustomer(_purchaseOrder);
+        return (_purchaseOrder, _price, _completionTime);
     }
     
     // function that consumer calls to make order
-    function makeOrder(uint purchaseOrder) public payable onlyConsumer(msg.sender) {
-        //require(c_contract.isConsumer(msg.sender), "calling address doesnt have permission to initiate make order. Address has to be approved consumer.");
+    function makeOrder(uint purchaseOrder) public payable onlyConsumer(msg.sender) returns(bool){
         
         // check if a product already exists for this purchase order
         require(purchaseOrderToUpcMapping[purchaseOrder] == 0, "this purchase order already has an existing asset");
@@ -341,11 +343,11 @@ contract SupplyChain is ERC721 {
         // checking the whosoever is making the make order is the same person who initiated the purchase order
         require(purchaseOrderToConsumerAddressMapping[purchaseOrder] == msg.sender, "consumer making make order request has no existing purchase order. please start with initiating purchase order.");
         
-        // check make order already sent or not
-        if (makeOrderAlreadySent(purchaseOrder)) {
+         // check make order already sent or not
+        if (purchaseOrdersSendingMakeOrders[purchaseOrder]) {
             revert("a make order has already been sent against this purchase order");
         }
-        
+      
         // check if supplied ether is sufficient or not
         require(purchaseOrderToVolMatDetails[purchaseOrder]["price"] < msg.value, "consumer has sent insufficient funds against the purchase order.");
         
@@ -356,41 +358,45 @@ contract SupplyChain is ERC721 {
             //
             revert("make order made beyond the stipulated time frame. start with new purchase order.");
         } else if (purchaseOrderToStatusMapping[purchaseOrder] == false) {
-            revert("purchase order with given purchase order id is inactive. Please initiate new purchase order");
+            revert("make order with given purchase order id is inactive. Please initiate new purchase order");
         } else {
+            // if everything passes, we are about to make a valid makeorder
             
             // store the amount of eth sent by consumer in escrow
             consumerAddressToEscrowDeposit[msg.sender] = msg.value;
             
             // record which purchase order has sent make order
-            purchaseOrdersSendingMakeOrders.push(purchaseOrder);
-            
+            purchaseOrdersSendingMakeOrders[purchaseOrder] = true;
             
             //emit the send make order event
             emit SendMakeOrderToCncOwner(purchaseOrder);
             
+            return true;
         }
-        
-        
     }
     
     // source material
-    function sourceMaterial(uint purchaseOrder) public onlySourcer(msg.sender) {
+    function sourceMaterial(uint purchaseOrder) public onlySourcer(msg.sender) returns (uint){
         
         // create an asset against the pending purchase order
-        uint[] memory pos = getAllPendingOrders();
+        //uint[] memory pos = getAllPendingOrders();
         //  this reupdates the pending purchase order arrays
-        require(isThisPurchaseOrderPending(purchaseOrder), "this purchase order doesnt have a pending make request");
+        require(purchaseOrderToStatusMapping[purchaseOrder] == true && purchaseOrdersSendingMakeOrders[purchaseOrder] == true, "this purchase order doesnt have a pending make request");
         
         // if it is not pending then create an ERC721 token asset against it
         sku = sku + 1;
         // increment the sku
-        address customerAddress = purchaseOrderToConsumerAddressMapping[purchaseOrder];
+        address payable customerAddress = purchaseOrderToConsumerAddressMapping[purchaseOrder];
         string memory customerName = purchaseOrderToCustomerDetails[purchaseOrder]["custName"];
         string memory customerLoc = purchaseOrderToCustomerDetails[purchaseOrder]["custName"];
         
         // generate a upc
-        uint upc = generateUPC(customerName, customerLoc, purchaseOrder);
+        uint upc = uint256(keccak256(abi.encodePacked(customerName, customerLoc, purchaseOrder, now)));
+        
+        // also track which purchase order relates to which upc
+        upcToPurchaseOrderMapping[upc] = purchaseOrder;
+        
+        // calculate the price of the asset
         uint price = purchaseOrderToVolMatDetails[purchaseOrder]["price"];
         
         // now create the asset
@@ -421,165 +427,159 @@ contract SupplyChain is ERC721 {
         // emit the sourced event
         emit Sourced(upc);
         
+        // return the up to the sources
+        return upc;
+        
     }
     
     // sourcer function to emit ship event to the cnc owner
-    function shipPartToCNC(uint upc) public onlySourcer(msg.sender) sourced(upc){
+    function shipPartToCNC(uint upc) public onlySourcer(msg.sender) sourced(upc) returns(bool){
         upcToAssetMapping[upc].assetState = State.BlankShipped;
         emit BlankShipped(upc);
+        return true;
     }
     
     // generate part function by the CNC owner
-    function generatePart(uint upc) public onlyCncOwner(msg.sender) blankShipped(upc) {
+    function generatePart(uint upc) public onlyCncOwner(msg.sender) blankShipped(upc) returns(bool){
         upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
         upcToAssetMapping[upc].cncOwnerAddress = msg.sender;
         upcToAssetMapping[upc].assetState = State.PartGenerated;
         emit PartGenerated(upc);
+        return true;
     }
     
     // cnc owner function to emit ship event to verifier
-    function shipPartToVerifier (uint upc) public onlyCncOwner(msg.sender) partGenerated(upc){
+    function shipPartToVerifier (uint upc) public onlyCncOwner(msg.sender) partGenerated(upc) returns (bool){
         upcToAssetMapping[upc].assetState = State.PartShipped;
         emit PartShipped(upc);
+        return true;
     }
     
     // verify part function by the verifier
-    function verifyPart (uint upc) public onlyVerifier(msg.sender) partShipped(upc){
+    function verifyPart (uint upc) public onlyVerifier(msg.sender) partShipped(upc) returns (bool){
         upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
         upcToAssetMapping[upc].verifierAddress = msg.sender;
         upcToAssetMapping[upc].assetState = State.Verified;
         emit Verified(upc);
+        return true;
     }
     
     // verifier function to emit the ship event to the distributor
-    function shipPartToDistributor (uint upc) public onlyVerifier(msg.sender) verified(upc){
+    function shipPartToDistributor (uint upc) public onlyVerifier(msg.sender) verified(upc) returns (bool){
         upcToAssetMapping[upc].assetState = State.ShippedtoDist;
         emit ShippedtoDist(upc);
+        return true;
     }
     
-    //distribute part to the consumer from the verifier
-    function shipPartToTheConsumer (uint upc) public onlyDistributor(msg.sender) shippedToDist(upc){
+    //distribute part to the consumer from the distributor
+    function shipPartToTheConsumer (uint upc) public onlyDistributor(msg.sender) shippedToDist(upc) returns (bool){
+        
+        // first check if shipping within alowwed days
+        uint _purchaseOrder = upcToPurchaseOrderMapping[upc];
+        uint _volumeClass = purchaseOrderToVolMatDetails[_purchaseOrder]["volumeClass"];
+        uint _completionTime = volumeClassToDaysMapping[_volumeClass];
+        uint _purchaseOrderTimeStamp = purchaseOrderToTimeStampMapping[_purchaseOrder];
+        
+        Asset memory newAsset = upcToAssetMapping[upc];
+        address payable customerAddress = newAsset.consumerAddress;
+        uint consumerPaid = consumerAddressToEscrowDeposit[customerAddress];
+    
+        if((now - _purchaseOrderTimeStamp) > _completionTime) {
+            purchaseOrderToStatusMapping[_purchaseOrder] = false;
+            customerAddress.transfer(consumerPaid);
+            consumerAddressToEscrowDeposit[customerAddress] = 0;
+            revert("shipped part beyond the allowable days. refunded customer");
+        }
+        
         upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
         upcToAssetMapping[upc].distributorAddress = msg.sender;
         upcToAssetMapping[upc].assetState = State.ShippedtoCons;
         emit ShippedtoCons(upc);
+        return true;
     }
     
-    // consumer acknowledges part receiption
-    function acceptPart (uint upc) public onlyConsumer(msg.sender) shippedtoCons(upc) {
+    // consumer receives part
+    function receivePart (uint upc) public onlyConsumer(msg.sender) shippedtoCons(upc) returns (bool){
+        
+        Asset memory newAsset = upcToAssetMapping[upc];
+        address payable customerAddress = newAsset.consumerAddress;
+        require(msg.sender == customerAddress, "current customer is not authentic owner of this asset");
+        
+        upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
+        upcToAssetMapping[upc].consumerAddress = msg.sender;
+        upcToAssetMapping[upc].assetState = State.ReceivedByCons;
+        emit ReceivedByCons(upc);
+        return true;
+    }
     
+    // consumer accepts part
+    function acceptPart (uint upc) public onlyConsumer(msg.sender) received(upc) returns (bool){
+        Asset memory newAsset = upcToAssetMapping[upc];
+        address payable customerAddress = newAsset.consumerAddress;
+        require(msg.sender == customerAddress, "current customer is not authentic owner of this asset");
+        address payable cncOwnerAddress = newAsset.cncOwnerAddress;
+        
+        
+        upcToAssetMapping[upc].assetState = State.AcceptedByCons;
+        emit AcceptedByCons(upc);
+    
+    // if accept then transfer money
+    uint assetPrice = newAsset.price;
+    uint consumerPaid = consumerAddressToEscrowDeposit[customerAddress];
+    
+    if(consumerPaid > assetPrice) {
+        
+        // this is where we settle payment
+        uint refund = consumerPaid - assetPrice;
+        customerAddress.transfer(refund);
+        cncOwnerAddress.transfer(assetPrice);
+    }else {
+        // just equal amount paid by customer so no refund
+        cncOwnerAddress.transfer(assetPrice);
+    }
+    
+    // then zero the escrow deposit amount
+    consumerAddressToEscrowDeposit[customerAddress] = 0;
+    
+    return true;
+    }
+    
+    // consumer rejects part
+    function rejectPart (uint upc) public onlyConsumer(msg.sender) received(upc) returns (bool){
+        Asset memory newAsset = upcToAssetMapping[upc];
+        address payable customerAddress = newAsset.consumerAddress;
+        require(msg.sender == customerAddress, "current customer is not authentic owner of this asset");
+        
+        // if reject then transfer all money to consumer
+        uint consumerPaid = consumerAddressToEscrowDeposit[customerAddress];
+        customerAddress.transfer(consumerPaid);
+    
+        upcToAssetMapping[upc].assetState = State.RejectedByCons;
+        emit RejectedByCons(upc);
+        return true;
     }
     
     
     
     ///////////////////////////////// helper or utility functions below this line////////////////////////////////////////////////////////////////////////
-    function generatePurchaseOrder(string memory _a, string memory _b, uint _v, uint _m) internal view returns (uint) {
-        uint thisTime = now;
-        // keccak of customer name, location, volume, material, current time
-        return uint256(keccak256(abi.encodePacked(_a, _b, _v, _m, thisTime)));
-    }
-    
-    function generateUPC(string memory _customerName, string memory _customerLoc, uint _purchaseOrder) internal view returns (uint) {
-        uint thisTime = now;
-        // keccak of customer name, location, purchase order and current time
-        return uint256(keccak256(abi.encodePacked(_customerName, _customerLoc, _purchaseOrder, thisTime)));
-    }
-    
     function updateMaterialClassToUnitPriceMapping(uint class, uint unitprice) public onlyOwner {
         require(unitprice <= 100000000000000000000 && unitprice >= 0, "supplied unitprice is either negative or too unrealistically high of a value");
         materialClassToUnitPriceMapping[class] = unitprice;
-        materialClassToUnitPriceMappingKeys.push(class);
     }
     
     function updateVolumeClassToFactorMapping(uint class, uint factor) public onlyOwner {
         require(factor <= 50 && factor > 0, "supplied factor is either negative or too unrealistically high of a value");
         volumeClassToFactorMapping[class] = factor;
-        volumeClassToFactorMappingKeys.push(class);
     }
     
     function deleteMaterialClassToUnitPriceMappingEntry(uint class) public onlyOwner returns (bool){
         delete materialClassToUnitPriceMapping[class];
-        
-        // then delete the key from the key array
-        for (uint i = 0; i <= materialClassToUnitPriceMappingKeys.length; i++) {
-            if (class == materialClassToUnitPriceMappingKeys[i]) {
-                delete materialClassToUnitPriceMappingKeys[i];
-            }
-        }
         return true;
     }
     
     function deleteVolumeClassToFactorMappingEntry(uint class) public onlyOwner returns (bool){
         delete volumeClassToFactorMapping[class];
-        
-        // then delete the key from the key array
-        for (uint i = 0; i <= volumeClassToFactorMappingKeys.length; i++) {
-            if (class == volumeClassToFactorMappingKeys[i]) {
-                delete volumeClassToFactorMappingKeys[i];
-            }
-        }
         return true;
     }
-    
-    function getAllMaterialClassToUnitPriceMaps() public view onlyOwner returns (uint[] memory, uint[] memory){
-        uint[] memory materialUnitPriceArray = new uint[](materialClassToUnitPriceMappingKeys.length);
-        for (uint i = 0; i <= materialClassToUnitPriceMappingKeys.length; i++) {
-            uint key = materialClassToUnitPriceMappingKeys[i];
-            materialUnitPriceArray[i] = materialClassToUnitPriceMapping[key];
-        }
-        return (materialClassToUnitPriceMappingKeys, materialUnitPriceArray);
-        // returning via tuple types
-    }
-    
-    function getAllVolumeClassToFactorMaps() public view onlyOwner returns (uint[] memory, uint[] memory){
-        uint[] memory volumeClassFactorArray = new uint[](volumeClassToFactorMappingKeys.length);
-        for (uint i = 0; i <= volumeClassToFactorMappingKeys.length; i++) {
-            uint key = volumeClassToFactorMappingKeys[i];
-            volumeClassFactorArray[i] = volumeClassToFactorMapping[key];
-        }
-        return (volumeClassToFactorMappingKeys, volumeClassFactorArray);
-        // returning via tuple types
-    }
-    
-    function makeOrderAlreadySent(uint _purchaseOrder) internal view returns (bool) {
-        for (uint i = 0; i <= purchaseOrdersSendingMakeOrders.length; i++) {
-            if (purchaseOrdersSendingMakeOrders[i] == _purchaseOrder) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    // function that sourcer calls to get a list of pending purchase orders
-    function getAllPendingOrders() public returns (uint[] memory) {
-        // first reset global array to zero
-        pendingPurchaseOrders.length = 0;
-        
-        for (uint i = 0; i <= purchaseOrdersSendingMakeOrders.length; i++) {
-            uint purchaseOrder = purchaseOrdersSendingMakeOrders[i];
-            if (purchaseOrderToStatusMapping[purchaseOrder]) {
-                pendingPurchaseOrders.push(purchaseOrder);
-            }
-        }
-        return pendingPurchaseOrders;
-    }
-    
-    function isThisPurchaseOrderPending(uint purchaseOrder) internal view returns (bool){
-        
-        for (uint i = 0; i <= pendingPurchaseOrders.length; i++) {
-            uint po = pendingPurchaseOrders[i];
-            if (po == purchaseOrder) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    function killContract() public {
-        if (msg.sender == supplyChainContractOwner) {
-            selfdestruct(supplyChainContractOwner);
-        }
-    }
-    
     
 }
