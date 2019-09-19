@@ -46,11 +46,11 @@ contract SupplyChain is ERC721 {
     //address private consumerContractAddress;
     
     // create instances of all the actor contracts
-    Sourcer s_contract = Sourcer(address(0x3258BEA7606ADaF8400211618Ea109f2C5706590));
-    cncOwner co_contract = cncOwner(address(0xD97391f0556a8C699427548DA453F400a24DB1d0));
-    Verifier v_contract = Verifier(address(0x64ed1CF06C0b5AFB773a04F5457C9575A3F8bb8e));
-    Distributor d_contract = Distributor(address(0xd9BC904fd2f784709a83C086F0Ff586f1b19b057));
-    Consumer c_contract = Consumer(address(0xF7D7850054D648acBbAd133452cBeDfC3844D170));
+    Sourcer s_contract = Sourcer(address(0x4a848eC9E27A9B422B02dC8aBc4c1d7A498fB476));
+    cncOwner co_contract = cncOwner(address(0x514670ECbff3430BF3fb2A8b3b26102F2E44bc9A));
+    Verifier v_contract = Verifier(address(0x12F0e918e45145407794F45856eb55AbA85D68E7));
+    Distributor d_contract = Distributor(address(0x24667DEbE11062888cbB2013D2E46B9DaFe7eF06));
+    Consumer c_contract = Consumer(address(0x2EffAF6F9a4A80659d77c5C1644e97FB8f1A1f49));
     
     //define a global variable to track product
     uint sku; // var for stock keeping unit- incremental integer
@@ -298,8 +298,11 @@ contract SupplyChain is ERC721 {
     }
     
     // function initiatePurchaseOrder from the consumer
-    function initiatePurchaseOrder(string memory custName, string memory custLoc, uint volumeClass, uint materialClass) public onlyConsumer(msg.sender) returns (uint _purchaseOrder, uint _price, uint _completionTime){
-        //require(c_contract.isConsumer(msg.sender), "calling address doesnt have permission to initiate purchase order. Address has to be approved consumer.");
+    function initiatePurchaseOrder(string memory custName, 
+                                    string memory custLoc, 
+                                    uint volumeClass, 
+                                    uint materialClass) public onlyConsumer(msg.sender) returns (uint _purchaseOrder){
+        
         require(bytes(custName).length > 0 && bytes(custLoc).length > 0 && volumeClass > 0 && materialClass > 0, "either customer, or location sent as empty string or vol/material classes sent as 0.");
         
         _purchaseOrder = uint256(keccak256(abi.encodePacked(custName, custLoc, volumeClass, materialClass, now)));
@@ -309,26 +312,26 @@ contract SupplyChain is ERC721 {
         purchaseOrderToStatusMapping[_purchaseOrder] = true;
         
         uint materialClassUnitPrice = materialClassToUnitPriceMapping[materialClass];
-        uint volumeFactor = volumeClassToFactorMapping[volumeClass];
+        //uint volumeFactor = volumeClassToFactorMapping[volumeClass];
         
         // making sure consumer is not passing invalid volume or material class
         if (materialClassUnitPrice == 0 || volumeClass == 0) {
             revert("invalid volume and material class meta info passed to smart contract. make sure they are non-zero/non-negative.");
         }
         
-        _price = materialClassUnitPrice*volumeFactor;
-        _completionTime = volumeClassToDaysMapping[volumeClass];
+        //_price = materialClassUnitPrice*volumeFactor;
+        //_completionTime = volumeClassToDaysMapping[volumeClass];
         
         purchaseOrderToCustomerDetails[_purchaseOrder]["custName"] = custName;
         purchaseOrderToCustomerDetails[_purchaseOrder]["custLoc"] = custLoc;
         
         purchaseOrderToVolMatDetails[_purchaseOrder]["volumeClass"] = volumeClass;
         purchaseOrderToVolMatDetails[_purchaseOrder]["materialClass"] = materialClass;
-        purchaseOrderToVolMatDetails[_purchaseOrder]["price"] = _price;
+        //purchaseOrderToVolMatDetails[_purchaseOrder]["price"] = _price;
         // also storing price
         
         emit CreateQuoteForCustomer(_purchaseOrder);
-        return (_purchaseOrder, _price, _completionTime);
+        return _purchaseOrder;
     }
     
     // function that consumer calls to make order
