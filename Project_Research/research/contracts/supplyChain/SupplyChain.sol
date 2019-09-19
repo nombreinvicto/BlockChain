@@ -46,11 +46,11 @@ contract SupplyChain is ERC721 {
     //address private consumerContractAddress;
     
     // create instances of all the actor contracts
-    Sourcer s_contract = Sourcer(address(0x4a848eC9E27A9B422B02dC8aBc4c1d7A498fB476));
-    cncOwner co_contract = cncOwner(address(0x514670ECbff3430BF3fb2A8b3b26102F2E44bc9A));
-    Verifier v_contract = Verifier(address(0x12F0e918e45145407794F45856eb55AbA85D68E7));
-    Distributor d_contract = Distributor(address(0x24667DEbE11062888cbB2013D2E46B9DaFe7eF06));
-    Consumer c_contract = Consumer(address(0x2EffAF6F9a4A80659d77c5C1644e97FB8f1A1f49));
+    Sourcer s_contract = Sourcer(address(0x097751B54996d34a75618C1579AD674C21c46f33));
+    cncOwner co_contract = cncOwner(address(0x29510582EBa42f8b5cc583e204298ef64CB2b90f));
+    Verifier v_contract = Verifier(address(0x2229B219e080A950102DFf03a1B66C2Db2dD185C));
+    Distributor d_contract = Distributor(address(0xe9c0A59322816Eb2FCe05809c97d6c94aeD7b82c));
+    Consumer c_contract = Consumer(address(0xbeC60e975434131767B374C86Cc4B9a1ae5457f0));
     
     //define a global variable to track product
     uint sku; // var for stock keeping unit- incremental integer
