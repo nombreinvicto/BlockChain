@@ -120,11 +120,12 @@ contract SupplyChain is ERC721 {
         PartGenerated, //6
         PartShipped, //7
         Verified, //8
-        ShippedtoDist,   //9
-        ShippedtoCons,  //10
-        ReceivedByCons, //11
-        AcceptedByCons, //12
-        RejectedByCons // 13
+        FailedVerification, //9
+        ShippedtoDist,   //10
+        ShippedtoCons,  //11
+        ReceivedByCons, //12
+        AcceptedByCons, //13
+        RejectedByCons // 14
     }
     
     // define struct asset for asset details
@@ -159,6 +160,7 @@ contract SupplyChain is ERC721 {
     event PartGenerated(uint upc);
     event PartShipped(uint upc);
     event Verified(uint upc);
+    event FailedVerification(uint upc);
     event ShippedtoDist(uint upc);
     event ShippedtoCons(uint upc);
     event ReceivedByCons(uint upc);
@@ -211,7 +213,7 @@ contract SupplyChain is ERC721 {
     
     // define a modifier that checks if an asset.state of a upc is BlankShipped or not
     modifier blankShipped(uint upc) {
-        require(upcToAssetMapping[upc].assetState == State.BlankShipped, "asset(blank) has not been shipped yet by the sourcer");
+        require((upcToAssetMapping[upc].assetState == State.BlankShipped) || (upcToAssetMapping[upc].assetState == State.FailedVerification), "asset(blank) has not been shipped yet by the sourcer or this is not a reject verified part");
         _;
     }
     
@@ -463,6 +465,14 @@ contract SupplyChain is ERC721 {
         upcToAssetMapping[upc].verifierAddress = msg.sender;
         upcToAssetMapping[upc].assetState = State.Verified;
         emit Verified(upc);
+    }
+    
+    // if verification not passed then reject part
+    function verificationRejection(uint upc) public onlyVerifier(msg.sender) partShipped(upc){
+        upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
+        upcToAssetMapping[upc].verifierAddress = msg.sender;
+        upcToAssetMapping[upc].assetState = State.FailedVerification;
+        emit FailedVerification(upc);
     }
     
     // verifier function to emit the ship event to the distributor
