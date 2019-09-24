@@ -46,11 +46,11 @@ contract SupplyChain is ERC721 {
     //address private consumerContractAddress;
     
     // create instances of all the actor contracts
-    Sourcer s_contract = Sourcer(address(0x097751B54996d34a75618C1579AD674C21c46f33));
-    cncOwner co_contract = cncOwner(address(0x29510582EBa42f8b5cc583e204298ef64CB2b90f));
-    Verifier v_contract = Verifier(address(0x2229B219e080A950102DFf03a1B66C2Db2dD185C));
-    Distributor d_contract = Distributor(address(0xe9c0A59322816Eb2FCe05809c97d6c94aeD7b82c));
-    Consumer c_contract = Consumer(address(0xbeC60e975434131767B374C86Cc4B9a1ae5457f0));
+    Sourcer s_contract = Sourcer(address(0xc6e7f0C50fE94D8AE39D6291fc020a4BfeFc8cf1));
+    cncOwner co_contract = cncOwner(address(0x7e8B2d91226A3B695d2a3C0af53267350232c7F5));
+    Verifier v_contract = Verifier(address(0x138b7Ec99B78e948ED9bB58108C9592180046446));
+    Distributor d_contract = Distributor(address(0x57a57Bc983B20DB15755bE7dd040EFAeFfC0c46B));
+    Consumer c_contract = Consumer(address(0xfb5EB46f29b18fa78b5Cbe69BcA0d3f05c436839));
     
     //define a global variable to track product
     uint sku; // var for stock keeping unit- incremental integer
@@ -319,7 +319,7 @@ contract SupplyChain is ERC721 {
         uint volumeFactor = volumeClassToFactorMapping[volumeClass];
         
         // making sure consumer is not passing invalid volume or material class
-        if (materialClassUnitPrice == 0 || volumeClass == 0) {
+        if (materialClassUnitPrice == 0 || volumeFactor == 0) {
             revert("invalid volume and material class meta info passed to smart contract. make sure they are non-zero/non-negative.");
         }
         
@@ -386,6 +386,8 @@ contract SupplyChain is ERC721 {
     // source material
     // also transaction functions do not return values
     function sourceMaterial(uint purchaseOrder) public onlySourcer(msg.sender){
+        // make sure this purchase order already hasnt gone for an Asset creation
+        require(purchaseOrderToUpcMapping[purchaseOrder] == 0, "this purchase order already has an existing asset");
 
         require(purchaseOrderToStatusMapping[purchaseOrder] == true && purchaseOrdersSendingMakeOrders[purchaseOrder] == true, "this purchase order doesnt have a pending make request");
         
@@ -577,5 +579,7 @@ contract SupplyChain is ERC721 {
         delete volumeClassToFactorMapping[class];
         return true;
     }
+    
+
     
 }
