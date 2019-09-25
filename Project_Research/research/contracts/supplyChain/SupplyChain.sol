@@ -38,19 +38,12 @@ contract SupplyChain is ERC721 {
     // define owner
     address payable supplyChainContractOwner;
     
-    // declare all the actor contract addresses
-    //address public sourcerContractAddress;
-    //address private cncOwnerContractAddress;
-    //address private verfierContractAddress;
-    //address private distributorContractAddress;
-    //address private consumerContractAddress;
-    
     // create instances of all the actor contracts
-    Sourcer s_contract = Sourcer(address(0xc6e7f0C50fE94D8AE39D6291fc020a4BfeFc8cf1));
-    cncOwner co_contract = cncOwner(address(0x7e8B2d91226A3B695d2a3C0af53267350232c7F5));
-    Verifier v_contract = Verifier(address(0x138b7Ec99B78e948ED9bB58108C9592180046446));
-    Distributor d_contract = Distributor(address(0x57a57Bc983B20DB15755bE7dd040EFAeFfC0c46B));
-    Consumer c_contract = Consumer(address(0xfb5EB46f29b18fa78b5Cbe69BcA0d3f05c436839));
+    Sourcer s_contract = Sourcer(address(0x3a66A85db1A877EDA8751765B0a0dc912B161121));
+    cncOwner co_contract = cncOwner(address(0xE1b1CCc1178E071D5CA384Df1f505Ed58b18563a));
+    Verifier v_contract = Verifier(address(0x1B70b31B1c9b25CF7eE89B8C8a557cCE2e42BACA));
+    Distributor d_contract = Distributor(address(0x0cF80d7C0f7a56457705BE8CB2d8c073b9aDdD56));
+    Consumer c_contract = Consumer(address(0xcD5eaC08cB8E6623DB2BEf1F1cb33f343AC72ecf));
     
     //define a global variable to track product
     uint sku; // var for stock keeping unit- incremental integer
@@ -105,8 +98,10 @@ contract SupplyChain is ERC721 {
     mapping(address => uint) internal consumerAddressToEscrowDeposit;
     
     
-    //mapping (uint => bool) public pendingPurchaseOrders;
-    //uint[] public pendingPurchaseOrders;
+    
+    // mapping that maps cncOwnerAddress to total orders taken and order completed
+    mapping(address => mapping(string => uint)) cncOwnerAddressToOrderCompletedHistory;
+    
     
     
     // define enum state with states from sequence diagram
@@ -394,8 +389,8 @@ contract SupplyChain is ERC721 {
         require(purchaseOrderToStatusMapping[purchaseOrder] == true && purchaseOrdersSendingMakeOrders[purchaseOrder] == true, "this purchase order doesnt have a pending make request");
         
         // if it is not pending then create an ERC721 token asset against it
-        sku = sku + 1;
-        // increment the sku
+        sku = sku + 1;// increment the sku
+        
         address payable customerAddress = purchaseOrderToConsumerAddressMapping[purchaseOrder];
         string memory customerName = purchaseOrderToCustomerDetails[purchaseOrder]["custName"];
         string memory customerLoc = purchaseOrderToCustomerDetails[purchaseOrder]["custName"];
@@ -447,9 +442,13 @@ contract SupplyChain is ERC721 {
     
     // generate part function by the CNC owner
     function generatePart(uint upc) public onlyCncOwner(msg.sender) blankShipped(upc){
+        
         upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
         upcToAssetMapping[upc].cncOwnerAddress = msg.sender;
         upcToAssetMapping[upc].assetState = State.PartGenerated;
+        
+        // register an order against the cncowner address
+        cncOwnerAddressToOrderCompletedHistory[msg.sender]["ordersTaken"] = cncOwnerAddressToOrderCompletedHistory[msg.sender]["ordersTaken"] + 1;
         emit PartGenerated(upc);
     }
     
@@ -549,6 +548,9 @@ contract SupplyChain is ERC721 {
     
     // then zero the escrow deposit amount
     consumerAddressToEscrowDeposit[customerAddress] = 0;
+    
+    // register an order completed against the cncowner address
+    cncOwnerAddressToOrderCompletedHistory[cncOwnerAddress]["ordersCompleted"] = cncOwnerAddressToOrderCompletedHistory[cncOwnerAddress]["ordersCompleted"] + 1;
 
     }
     
