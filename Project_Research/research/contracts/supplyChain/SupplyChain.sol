@@ -1,7 +1,5 @@
 pragma solidity >=0.5.0;
-
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
-
 
 // get all the external contract signatures
 contract Sourcer {
@@ -45,6 +43,8 @@ contract SupplyChain is ERC721 {
     Distributor d_contract = Distributor(address(0x0cF80d7C0f7a56457705BE8CB2d8c073b9aDdD56));
     Consumer c_contract = Consumer(address(0xcD5eaC08cB8E6623DB2BEf1F1cb33f343AC72ecf));
     
+    
+    // upc based mappings //////////////////////////////////////////////////////////////////////////
     //define a global variable to track product
     uint sku; // var for stock keeping unit- incremental integer
     
@@ -61,7 +61,7 @@ contract SupplyChain is ERC721 {
     mapping(uint => uint) upcToPurchaseOrderMapping;
     
     
-    
+    // PO based mappings //////////////////////////////////////////////////////////////////////////
     // define a mapping of unique purchase order to consumerAddress
     mapping(uint => address payable) public purchaseOrderToConsumerAddressMapping;
     
@@ -84,7 +84,7 @@ contract SupplyChain is ERC721 {
     mapping(uint => bool)  public purchaseOrdersSendingMakeOrders;
     
     
-    
+    // volume/material based mappings //////////////////////////////////////////////////////////////////////////
     // sample volumeClass to factor mapping
     mapping(uint => uint) internal volumeClassToFactorMapping;
     
@@ -98,9 +98,12 @@ contract SupplyChain is ERC721 {
     mapping(address => uint) internal consumerAddressToEscrowDeposit;
     
     
-    
+    // miscellaneous mappings //////////////////////////////////////////////////////////////////////////
     // mapping that maps cncOwnerAddress to total orders taken and order completed
     mapping(address => mapping(string => uint)) cncOwnerAddressToOrderCompletedHistory;
+    
+    // mapping that used by consumer to see if he is to initiate make order for a cncowner
+    mapping(address => bool) cncOwnerBusyStatus;
     
     
     
@@ -570,7 +573,6 @@ contract SupplyChain is ERC721 {
     }
     
     
-    
     ///////////////////////////////// helper or utility functions below this line////////////////////////////////////////////////////////////////////////
     function updateMaterialClassToUnitPriceMapping(uint class, uint unitprice) public onlyOwner {
         require(unitprice <= 100000000000000000000 && unitprice >= 0, "supplied unitprice is either negative or too unrealistically high of a value");
@@ -590,6 +592,10 @@ contract SupplyChain is ERC721 {
     function deleteVolumeClassToFactorMappingEntry(uint class) public onlyOwner returns (bool){
         delete volumeClassToFactorMapping[class];
         return true;
+    }
+    
+    function getOrderSucessHistory(address cncOwnerAddress) public view onlyConsumer(msg.sender) returns(uint, uint){
+        return (cncOwnerAddressToOrderCompletedHistory[cncOwnerAddress]["ordersTaken"],cncOwnerAddressToOrderCompletedHistory[cncOwnerAddress]["ordersCompleted"]); 
     }
     
 
