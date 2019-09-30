@@ -102,10 +102,6 @@ contract SupplyChain is ERC721 {
     // mapping that maps cncOwnerAddress to total orders taken and order completed
     mapping(address => mapping(string => uint)) cncOwnerAddressToOrderCompletedHistory;
     
-    // mapping that used by consumer to see if he is to initiate make order for a cncowner
-    mapping(address => bool) cncOwnerBusyStatus;
-    
-    
     
     // define enum state with states from sequence diagram
     enum State {
