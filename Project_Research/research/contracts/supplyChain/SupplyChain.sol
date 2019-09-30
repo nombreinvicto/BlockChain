@@ -37,11 +37,11 @@ contract SupplyChain is ERC721 {
     address payable supplyChainContractOwner;
     
     // create instances of all the actor contracts
-    Sourcer s_contract = Sourcer(address(0x3a66A85db1A877EDA8751765B0a0dc912B161121));
-    cncOwner co_contract = cncOwner(address(0xE1b1CCc1178E071D5CA384Df1f505Ed58b18563a));
-    Verifier v_contract = Verifier(address(0x1B70b31B1c9b25CF7eE89B8C8a557cCE2e42BACA));
-    Distributor d_contract = Distributor(address(0x0cF80d7C0f7a56457705BE8CB2d8c073b9aDdD56));
-    Consumer c_contract = Consumer(address(0xcD5eaC08cB8E6623DB2BEf1F1cb33f343AC72ecf));
+    Sourcer s_contract = Sourcer(address(0x86D5788a53F5425dd54f26532826C905497d57b6));
+    cncOwner co_contract = cncOwner(address(0x1627504c3250Db5F39653eB67f2DA112C9e6b52E));
+    Verifier v_contract = Verifier(address(0xbd6fAEaCE3F1225125113b955BE3a9551C934F6b));
+    Distributor d_contract = Distributor(address(0x50383D5F1cC8c8BBa655C466C14a951BD41e5997));
+    Consumer c_contract = Consumer(address(0x409a83e7bd74925b46B9B8194a34E1C322Ecbe20));
     
     
     // upc based mappings //////////////////////////////////////////////////////////////////////////
@@ -100,6 +100,7 @@ contract SupplyChain is ERC721 {
     
     // miscellaneous mappings //////////////////////////////////////////////////////////////////////////
     // mapping that maps cncOwnerAddress to total orders taken and order completed
+    // "orderTaken" in PartGenerated function and "ordersCompleted" incremented in acceptPart() by consumer
     mapping(address => mapping(string => uint)) cncOwnerAddressToOrderCompletedHistory;
     
     
@@ -404,14 +405,17 @@ contract SupplyChain is ERC721 {
         uint price = purchaseOrderToVolMatDetails[purchaseOrder]["price"];
         
         // now create the asset
-        Asset memory newAsset = Asset(upc,
+        Asset memory newAsset = Asset(
+            upc,
             price,
+            
+            msg.sender,
             msg.sender,
             address(0),
             address(0),
             address(0),
-            address(0),
             customerAddress,
+            
             customerName,
             customerLoc,
             State.Sourced);
@@ -442,6 +446,10 @@ contract SupplyChain is ERC721 {
     // generate part function by the CNC owner
     function generatePart(uint upc) public onlyCncOwner(msg.sender) blankShipped(upc){
         
+        // make an ERC 721 transfer to the CNC owner
+        _transferFrom(upcToAssetMapping[upc].currentOwnerAddress, msg.sender, upc);
+        
+        // now make the necessary Asset attribute changes
         upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
         upcToAssetMapping[upc].cncOwnerAddress = msg.sender;
         upcToAssetMapping[upc].assetState = State.PartGenerated;
@@ -459,6 +467,10 @@ contract SupplyChain is ERC721 {
     
     // verify part function by the verifier
     function verifyPart (uint upc) public onlyVerifier(msg.sender) partShipped(upc){
+        
+        // make an ERC 721 transfer to the CNC owner
+        _transferFrom(upcToAssetMapping[upc].currentOwnerAddress, msg.sender, upc);
+        
         upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
         upcToAssetMapping[upc].verifierAddress = msg.sender;
         upcToAssetMapping[upc].assetState = State.Verified;
@@ -500,6 +512,9 @@ contract SupplyChain is ERC721 {
         }
         
         // oterwise go ahead with shipping
+        // make an ERC 721 transfer to the distributor
+        _transferFrom(upcToAssetMapping[upc].currentOwnerAddress, msg.sender, upc);
+        
         upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
         upcToAssetMapping[upc].distributorAddress = msg.sender;
         upcToAssetMapping[upc].assetState = State.ShippedtoCons;
@@ -512,6 +527,9 @@ contract SupplyChain is ERC721 {
         Asset memory newAsset = upcToAssetMapping[upc];
         address payable customerAddress = newAsset.consumerAddress;
         require(msg.sender == customerAddress, "current customer is not authentic owner of this asset");
+        
+        // make an ERC 721 transfer to the consumer
+        _transferFrom(upcToAssetMapping[upc].currentOwnerAddress, msg.sender, upc);
         
         upcToAssetMapping[upc].currentOwnerAddress = msg.sender;
         upcToAssetMapping[upc].consumerAddress = msg.sender;
