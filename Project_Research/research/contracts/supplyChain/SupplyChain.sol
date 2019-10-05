@@ -37,11 +37,15 @@ contract SupplyChain is ERC721 {
     address payable supplyChainContractOwner;
     
     // create instances of all the actor contracts
-    Sourcer s_contract = Sourcer(address(0x86D5788a53F5425dd54f26532826C905497d57b6));
-    cncOwner co_contract = cncOwner(address(0x1627504c3250Db5F39653eB67f2DA112C9e6b52E));
-    Verifier v_contract = Verifier(address(0xbd6fAEaCE3F1225125113b955BE3a9551C934F6b));
-    Distributor d_contract = Distributor(address(0x50383D5F1cC8c8BBa655C466C14a951BD41e5997));
-    Consumer c_contract = Consumer(address(0x409a83e7bd74925b46B9B8194a34E1C322Ecbe20));
+    Sourcer s_contract = Sourcer(address(0x3C8597DD84E7248151054011F8D574f472a9526d));
+    cncOwner co_contract = cncOwner(address(0x3e7bC9213D0CE5fE8dEcb3a6C0426ecB86971209));
+    Verifier v_contract = Verifier(address(0x9f7e2F2752Db5f034E41CA898A41Cd8E0b9185de));
+    Distributor d_contract = Distributor(address(0x93698E1874D995abc485A292D85d3b20eC4d4302));
+    Consumer c_contract = Consumer(address(0x6964C10874997cdaef3b5FB2BE5A0358C1D97682));
+    
+    // define an array and mapping for cncOwner so that consumers can see if this  cncOwner has a history
+    address [] cncOwnerAddressRegistered;
+    mapping(address => bool) cncOwnerAddressRegisteredAvailableMapping;
     
     
     // upc based mappings //////////////////////////////////////////////////////////////////////////
@@ -146,7 +150,7 @@ contract SupplyChain is ERC721 {
     // event definitions ////////////////////////////////////////////////////////////////////////
     // define 10 events with the same 10 state values and accept upc as argument
     event InitiatedPurchaseOrder(uint purchaseOrder);
-    event CreateQuoteForCustomer(uint purchaseOrder, uint price, uint completionTime);
+    event CreateQuoteForCustomer(uint purchaseOrder, uint price, uint completionTime, address cncOwnerAddressDelegated);
     event SendMakeOrderToCncOwner(uint purchaseOrder);
     
     event Sourced(uint upc);
@@ -330,8 +334,17 @@ contract SupplyChain is ERC721 {
         purchaseOrderToVolMatDetails[purchaseOrder]["materialClass"] = materialClass;
         purchaseOrderToVolMatDetails[purchaseOrder]["price"] = price; // also storing price
         
+        // choose a cncOwnerAddress
+        address cncOwnerDelegated = address(0);
+        for(uint i=0; i < cncOwnerAddressRegistered.length; i++) {
+            address cncOwner_ = cncOwnerAddressRegistered[i];
+            if (cncOwnerAddressRegisteredAvailableMapping[cncOwner_] == true) {
+                cncOwnerDelegated = cncOwner_;
+            }
+        }
         
-        emit CreateQuoteForCustomer(purchaseOrder, price, completionTime);
+        
+        emit CreateQuoteForCustomer(purchaseOrder, price, completionTime, cncOwnerDelegated);
         
     }
     
@@ -446,6 +459,9 @@ contract SupplyChain is ERC721 {
     // generate part function by the CNC owner
     function generatePart(uint upc) public onlyCncOwner(msg.sender) blankShipped(upc){
         
+        // mae this cncowner busy
+        cncOwnerAddressRegisteredAvailableMapping[msg.sender] = false;
+        
         // make an ERC 721 transfer to the CNC owner
         _transferFrom(upcToAssetMapping[upc].currentOwnerAddress, msg.sender, upc);
         
@@ -457,6 +473,9 @@ contract SupplyChain is ERC721 {
         // register an order against the cncowner address
         cncOwnerAddressToOrderCompletedHistory[msg.sender]["ordersTaken"] = cncOwnerAddressToOrderCompletedHistory[msg.sender]["ordersTaken"] + 1;
         emit PartGenerated(upc);
+        
+        // mae this cncowner free
+        cncOwnerAddressRegisteredAvailableMapping[msg.sender] = true;
     }
     
     // cnc owner function to emit ship event to verifier
@@ -610,6 +629,19 @@ contract SupplyChain is ERC721 {
     
     function getOrderSucessHistory(address cncOwnerAddress) public view onlyConsumer(msg.sender) returns(uint, uint){
         return (cncOwnerAddressToOrderCompletedHistory[cncOwnerAddress]["ordersTaken"],cncOwnerAddressToOrderCompletedHistory[cncOwnerAddress]["ordersCompleted"]); 
+    }
+    
+    function registerCncOwner() public onlyCncOwner(msg.sender) {
+        
+        for(uint i=0; i < cncOwnerAddressRegistered.length; i++) {
+            address cncOwner_ = cncOwnerAddressRegistered[i];
+            if (cncOwner_ == msg.sender) {
+                revert("address is already registred");
+            }
+        }
+        
+        cncOwnerAddressRegistered.push(msg.sender);
+        cncOwnerAddressRegisteredAvailableMapping[msg.sender] = true;
     }
     
 
