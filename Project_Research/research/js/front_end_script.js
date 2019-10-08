@@ -35,6 +35,7 @@ if (window.ethereum) {
     // creating a smart contract
     let sc_contract = new web3.eth.Contract(sc_abi, sc_address);
     
+    // get history of the blockchain transactions
     getHistoryButton.addEventListener('click', () => {
         sc_contract
             .methods
@@ -53,6 +54,7 @@ if (window.ethereum) {
         
     });
     
+    // initiate a purchase order on the blockchain
     initiatePO.addEventListener('click', () => {
         sc_contract
             .methods
@@ -60,7 +62,8 @@ if (window.ethereum) {
             .send({from: consumerAddress})
             .on("receipt", function (receipt) {
                 console.log(receipt);
-                console.log(receipt.events.CreateQuoteForCustomer.returnValues[0]);
+                let po = receipt.events.CreateQuoteForCustomer.returnValues[0];
+                purchaseOrderOutputSpan.innerText = po;
             });
     });
     
