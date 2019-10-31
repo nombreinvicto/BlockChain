@@ -27,7 +27,8 @@ contract Consumer {
     function isConsumer(address account) public view returns (bool) {}
 }
 
-// start with the main supplyChain contract
+
+// start with the main supplyChain contract that inherits from ERC 721
 contract SupplyChain is ERC721 {
     // import safemath for uint
   
@@ -37,11 +38,11 @@ contract SupplyChain is ERC721 {
     address payable supplyChainContractOwner;
     
     // create instances of all the actor contracts
-    Sourcer s_contract = Sourcer(address(0x3C8597DD84E7248151054011F8D574f472a9526d));
-    cncOwner co_contract = cncOwner(address(0x3e7bC9213D0CE5fE8dEcb3a6C0426ecB86971209));
-    Verifier v_contract = Verifier(address(0x9f7e2F2752Db5f034E41CA898A41Cd8E0b9185de));
-    Distributor d_contract = Distributor(address(0x93698E1874D995abc485A292D85d3b20eC4d4302));
-    Consumer c_contract = Consumer(address(0x6964C10874997cdaef3b5FB2BE5A0358C1D97682));
+    Sourcer s_contract = Sourcer(address(0xeEF585BfB8b00BA5463a1ff2607c36862160357e));
+    cncOwner co_contract = cncOwner(address(0x70C07EaFaa3fDc3EaB7C7E5B931D8d9294Cb9474));
+    Verifier v_contract = Verifier(address(0x5cea2DeF4Df0a8cABF9e02C931A86A511E30f16e));
+    Distributor d_contract = Distributor(address(0xC1b57f18265bbca436F5DE191dbB460D477F689E));
+    Consumer c_contract = Consumer(address(0xe5cD46577ad6607AddDE5040a1cF28B3D9Fb3181));
     
     // define an array and mapping for cncOwner so that consumers can see if this  cncOwner has a history
     address [] cncOwnerAddressRegistered;

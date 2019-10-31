@@ -1,0 +1,432 @@
+Global Counter is:  1
+out.js:25740 PO is: 
+out.js:25741 104549878846042173241732592227732614814309680661494564659586982278314427192297
+out.js:25744 Purchase Order Time:  18.39299988746643
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  1.8919999599456787
+out.js:25761 Make Order gas:  74410
+out.js:25774 Sourcing Time:  16.856000185012817
+out.js:25775 Sourcing gas:  334603
+out.js:25794 Gen Time:  1.3229999542236328
+out.js:25795 Gen gas:  91803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  2
+out.js:25740 PO is: 
+out.js:25741 6696989125778967042599691952278479835244828235071967245212192348428838500320
+out.js:25744 Purchase Order Time:  1.877000093460083
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  9.32200002670288
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  4.321000099182129
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  1.2709999084472656
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  3
+out.js:25740 PO is: 
+out.js:25741 61894860452456420974832995365930968545539687782985431209326590688743850542741
+out.js:25744 Purchase Order Time:  1.806999921798706
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  4.983999967575073
+out.js:25761 Make Order gas:  55186
+out.js:25774 Sourcing Time:  5.809000015258789
+out.js:25775 Sourcing gas:  304579
+out.js:25794 Gen Time:  4.43500018119812
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  4
+out.js:25740 PO is: 
+out.js:25741 8087597094730663701187870442473496962768639924102993744993753368482185160256
+out.js:25744 Purchase Order Time:  3.3600001335144043
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  9.292999982833862
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  9.883000135421753
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  1.2939999103546143
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  5
+out.js:25740 PO is: 
+out.js:25741 84892726329012504867831429781410487667779861624980172459956287888275083869240
+out.js:25744 Purchase Order Time:  5.332000017166138
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  1.6690001487731934
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  1.7230000495910645
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  2.186000108718872
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  6
+out.js:25740 PO is: 
+out.js:25741 70903689636143683138097336164445262541634587669025792301002306699493767592404
+out.js:25744 Purchase Order Time:  25.82699990272522
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  0.9780001640319824
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  0.874000072479248
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  4.990000009536743
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  7
+out.js:25740 PO is: 
+out.js:25741 76226271569084953707073215422802602958292143910694372197466856401997999679656
+out.js:25744 Purchase Order Time:  1.1349999904632568
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  2.0369999408721924
+out.js:25761 Make Order gas:  55198
+out.js:25774 Sourcing Time:  4.411999940872192
+out.js:25775 Sourcing gas:  304591
+out.js:25794 Gen Time:  1.0490000247955322
+out.js:25795 Gen gas:  76791
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  8
+out.js:25740 PO is: 
+out.js:25741 83708223862701902236862903027520368714569715742288593062870392195294551970835
+out.js:25744 Purchase Order Time:  2.8610000610351562
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  3.232999801635742
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  1.5510001182556152
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  2.0490000247955322
+out.js:25795 Gen gas:  76258
+out.js:25796 ==================================================
+Global Counter is:  11
+out.js:25740 PO is: 
+out.js:25741 54876926570213138008819200117507158253731400058971301950695151460666727927696
+out.js:25744 Purchase Order Time:  1.0729999542236328
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  17.372999906539917
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  2.38100004196167
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  1.4590001106262207
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  12
+out.js:25740 PO is: 
+out.js:25741 7248987766636453458554335863665271902885662172033986798266975715609415000482
+out.js:25744 Purchase Order Time:  0.9660000801086426
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  7.827999830245972
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  8.644000053405762
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  1.0540001392364502
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  13
+out.js:25740 PO is: 
+out.js:25741 79013408657077454052425567296448380662695538625217224524330626641668885147213
+out.js:25744 Purchase Order Time:  1.988999843597412
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  3.5220000743865967
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  1.3680000305175781
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  0.4570000171661377
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  14
+out.js:25740 PO is: 
+out.js:25741 71277168618813944240767616432754591831616092577765359043783325663276372432327
+out.js:25744 Purchase Order Time:  21.185999870300293
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  9.5239999294281
+out.js:25761 Make Order gas:  55198
+out.js:25774 Sourcing Time:  1.7110002040863037
+out.js:25775 Sourcing gas:  304591
+out.js:25794 Gen Time:  1.7690000534057617
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  15
+out.js:25740 PO is: 
+out.js:25741 41729626391820959315308541412766526503346491383371713325328560894219170344532
+out.js:25744 Purchase Order Time:  1.621999979019165
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  17.61300015449524
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  1.0789999961853027
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  0.9700000286102295
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  16
+out.js:25740 PO is: 
+out.js:25741 109189463810992381545849219163211279912534756904461400364260277705836955140144
+out.js:25744 Purchase Order Time:  1.1500000953674316
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  0.5319998264312744
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  16.894999980926514
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  1.9739999771118164
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  17
+out.js:25740 PO is: 
+out.js:25741 45855849177613927640126300141260748897874026690964396865465515718179606660533
+out.js:25744 Purchase Order Time:  2.5410001277923584
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  0.4380002021789551
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  3.006999969482422
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  0.8819999694824219
+out.js:25795 Gen gas:  76791
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  18
+out.js:25740 PO is: 
+out.js:25741 6232252124307111886353562203511219887935463338382289574485364309646450484716
+out.js:25744 Purchase Order Time:  4.129000186920166
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  0.7290000915527344
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  4.151000022888184
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  1.0770001411437988
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  19
+out.js:25740 PO is: 
+out.js:25741 22754892455451682563969130163324062805963011509537492740759979858730841402311
+out.js:25744 Purchase Order Time:  0.9909999370574951
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  17.85699987411499
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  0.7599999904632568
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  7.680999994277954
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  20
+out.js:25740 PO is: 
+out.js:25741 11490344338678222609316991698052624738199325289711934952707623704951018660876
+out.js:25744 Purchase Order Time:  0.7480001449584961
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  1.556999921798706
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  0.556999921798706
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  1.178999900817871
+out.js:25795 Gen gas:  76791
+out.js:25796 ==================================================
+Global Counter is:  21
+out.js:25740 PO is: 
+out.js:25741 97380616744759390351601792489371254989643573493260656449259276337428706626478
+out.js:25744 Purchase Order Time:  21.3989999294281
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  7.776000022888184
+out.js:25761 Make Order gas:  55198
+out.js:25774 Sourcing Time:  2.8510000705718994
+out.js:25775 Sourcing gas:  304591
+Gen Time:  8.221999883651733
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+Global Counter is:  22
+out.js:25740 PO is: 
+out.js:25741 27476346078863901801059914829611046985966308213798787039564631568976306176382
+out.js:25744 Purchase Order Time:  1.0899999141693115
+out.js:25745 Purchase Order gas:  203611
+Make Order Time:  0.7260000705718994
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  2.3580000400543213
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  14.690000057220459
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+Global Counter is:  23
+out.js:25740 PO is: 
+out.js:25741 53776875699335470198648052408075750634667098307128747133107791746248791271388
+out.js:25744 Purchase Order Time:  1.7979998588562012
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  1.8840000629425049
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  0.6369998455047607
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  2.797999858856201
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  24
+out.js:25740 PO is: 
+out.js:25741 47232567540553898103941981011079882762369862795155867898544857070444546137115
+out.js:25744 Purchase Order Time:  1.3680000305175781
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  1.6040000915527344
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  1.0490000247955322
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  0.5490000247955322
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  25
+out.js:25740 PO is: 
+out.js:25741 23558389836921450071088742474841453646893400275435512394281895251578406716100
+out.js:25744 Purchase Order Time:  2.0149998664855957
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  22.562000036239624
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  0.31599998474121094
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  14.580999851226807
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  26
+out.js:25740 PO is: 
+out.js:25741 80444072490898360253016193706793068382044890248189080026538207501372702223146
+out.js:25744 Purchase Order Time:  2.444000005722046
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  0.876000165939331
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  2.419999837875366
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  0.5369999408721924
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  27
+out.js:25740 PO is: 
+out.js:25741 71983156529793804330389463139528889473531968005936691259663040659085189913199
+out.js:25744 Purchase Order Time:  1.0959999561309814
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  2.057999849319458
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  0.628000020980835
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  0.42100000381469727
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+Global Counter is:  30
+out.js:25740 PO is: 
+out.js:25741 113223113968870687216378824282644886387644156901293050719778430467589189146736
+out.js:25744 Purchase Order Time:  9.323999881744385
+out.js:25745 Purchase Order gas:  203611
+Make Order Time:  23.686999797821045
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  0.4090001583099365
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  5.892999887466431
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+Global Counter is:  31
+out.js:25740 PO is: 
+out.js:25741 3355684493483047544285489844574311945596625994463713323063499763024164432988
+out.js:25744 Purchase Order Time:  0.872999906539917
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  1.180999994277954
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  8.054999828338623
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  16.36400008201599
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  32
+out.js:25740 PO is: 
+out.js:25741 76930155748088986268106551095867666062321598803998752764422037502804526924894
+out.js:25744 Purchase Order Time:  1.4229998588562012
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  0.5109999179840088
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  0.9549999237060547
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  24.039000034332275
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  33
+out.js:25740 PO is: 
+out.js:25741 66670592963540288891166899573254802596390369048614385652672506650500694907903
+out.js:25744 Purchase Order Time:  0.49000000953674316
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  0.681999921798706
+out.js:25761 Make Order gas:  55198
+out.js:25774 Sourcing Time:  15.819000005722046
+out.js:25775 Sourcing gas:  304591
+out.js:25794 Gen Time:  1.1700000762939453
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  34
+out.js:25740 PO is: 
+out.js:25741 76386289136472760791731361991742018366290375775434585465660744812140980396515
+out.js:25744 Purchase Order Time:  0.8199999332427979
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  1.4049999713897705
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  9.809000015258789
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  2.3380000591278076
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  35
+out.js:25740 PO is: 
+out.js:25741 94402694263816842708430947695452915474123124895505090593938381255717211040975
+out.js:25744 Purchase Order Time:  12.669000148773193
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  1.750999927520752
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  1.7300000190734863
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  13.95799994468689
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  36
+out.js:25740 PO is: 
+out.js:25741 79534628168566259053273219907262328417057546334877402584130400872220539753162
+out.js:25744 Purchase Order Time:  1.3359999656677246
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  10.309000015258789
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  2.245000123977661
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  1.753000020980835
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  37
+out.js:25740 PO is: 
+out.js:25741 31727623234664980562419546821642991745590329339916492876095661398471637440782
+out.js:25744 Purchase Order Time:  5.45799994468689
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  2.9779999256134033
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  2.705000162124634
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  1.070000171661377
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  38
+out.js:25740 PO is: 
+out.js:25741 77015113516065601703631525325604985678770675191376769764680262767278438017436
+out.js:25744 Purchase Order Time:  0.7760000228881836
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  0.7690000534057617
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  1.8859999179840088
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  1.2790000438690186
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  39
+out.js:25740 PO is: 
+out.js:25741 70216766677851906188044610555972895623367124836077219255108356117806711726241
+out.js:25744 Purchase Order Time:  1.678999900817871
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  0.8650000095367432
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  4.04800009727478
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  2.065000057220459
+out.js:25795 Gen gas:  76803
+out.js:25796 ==================================================
+out.js:25739 Global Counter is:  40
+out.js:25740 PO is: 
+out.js:25741 58308812224076757559815683473838094449111347851853658253069843449760475182394
+out.js:25744 Purchase Order Time:  0.5150001049041748
+out.js:25745 Purchase Order gas:  203611
+out.js:25760 Make Order Time:  11.09000015258789
+out.js:25761 Make Order gas:  55210
+out.js:25774 Sourcing Time:  0.42799997329711914
+out.js:25775 Sourcing gas:  304603
+out.js:25794 Gen Time:  1.7690000534057617
+out.js:25795 Gen gas:  76791
+out.js:25796 ==================================================
